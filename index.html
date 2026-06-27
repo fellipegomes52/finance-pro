@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Pro - Login & Provisões na Nuvem</title>
+    <title>Finance Pro - Controle Fixo e Variável na Nuvem</title>
     <!-- Font Awesome para Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts - Inter -->
@@ -447,7 +447,8 @@
     const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
     
-    let supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase = null;
+    let bancoNuvemAtivo = false;
     // ==========================================
 
     let lancamentos = [];
@@ -468,19 +469,37 @@
     };
 
     window.onload = async function() {
-        document.getElementById('dataVar').valueAsDate = new Date();
-        document.getElementById('dataFix').valueAsDate = new Date();
-        ajustarFormulario('Var');
-        ajustarFormulario('Fix');
+        if (document.getElementById('dataVar')) document.getElementById('dataVar').valueAsDate = new Date();
+        if (document.getElementById('dataFix')) document.getElementById('dataFix').valueAsDate = new Date();
         
-        // Verificar se já possui sessão ativa salva no navegador
-        const sessionUser = sessionStorage.getItem('financeProUser');
-        if (sessionUser) {
-            usuarioLogado = JSON.parse(sessionUser);
-            showAppScreen();
-        } else {
+        try {
+            // Inicializar o cliente do Supabase com tratamento de erros de carregamento assíncronos
+            if (window.supabase) {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                bancoNuvemAtivo = true;
+            } else {
+                throw new Error("A biblioteca do Supabase falhou ao carregar.");
+            }
+
+            ajustarFormulario('Var');
+            ajustarFormulario('Fix');
+
+            // Verificar se o usuário já possui sessão ativa salva no navegador
+            const sessionUser = sessionStorage.getItem('financeProUser');
+            if (sessionUser) {
+                usuarioLogado = JSON.parse(sessionUser);
+                await showAppScreen();
+            } else {
+                // Se não estiver logado, libera o login IMEDIATAMENTE sem travar no carregamento
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('screenAuth').style.display = 'flex';
+                document.getElementById('screenApp').style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Erro na inicialização:", error);
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('screenAuth').style.display = 'flex';
+            document.getElementById('screenApp').style.display = 'none';
         }
     };
 
@@ -506,7 +525,6 @@
 
         if (cpf.length !== 11) { alert("CPF inválido! Digite os 11 números."); return; }
         
-        // Validação de caractere especial na senha
         const regexEspecial = /[\!@#$%^&*(),.?":{}|<>_\-\[\]]/;
         if (!regexEspecial.test(senha)) {
             alert("A senha precisa conter pelo menos um caractere especial (ex: @, #, $, !).");
@@ -516,27 +534,30 @@
         document.getElementById('loadingText').innerText = "Processando cadastro...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
-        // Verificar se CPF já está cadastrado
-        const { data: usuarioExistente } = await supabase.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
-        
-        if (usuarioExistente) {
+        try {
+            const { data: usuarioExistente } = await supabase.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
+            
+            if (usuarioExistente) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert("Este CPF já possui cadastro no sistema!");
+                return;
+            }
+
+            const novoUser = { id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha };
+            const { error } = await supabase.from('usuarios').insert([novoUser]);
+
             document.getElementById('loadingOverlay').style.display = 'none';
-            alert("Este CPF já possui cadastro no sistema!");
-            return;
-        }
 
-        // Inserir usuário
-        const novoUser = { id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha };
-        const { error } = await supabase.from('usuarios').insert([novoUser]);
-
-        document.getElementById('loadingOverlay').style.display = 'none';
-
-        if (error) {
-            alert("Erro ao realizar cadastro. Verifique a tabela no Supabase.");
-        } else {
-            alert("Cadastro realizado com sucesso! Faça seu login.");
-            this.reset();
-            toggleAuthCards();
+            if (error) {
+                alert("Erro ao realizar cadastro: " + error.message);
+            } else {
+                alert("Cadastro realizado com sucesso! Faça seu login.");
+                this.reset();
+                toggleAuthCards();
+            }
+        } catch(err) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            alert("Erro de comunicação com o Supabase: " + err.message);
         }
     };
 
@@ -549,26 +570,29 @@
         document.getElementById('loadingText').innerText = "Autenticando...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
-        const { data: user, error } = await supabase.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
+        try {
+            const { data: user, error } = await supabase.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
 
-        if (error || !user) {
+            if (error || !user) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                alert("CPF ou senha incorretos!");
+                return;
+            }
+
+            usuarioLogado = user;
+            sessionStorage.setItem('financeProUser', JSON.stringify(user));
+            this.reset();
+            await showAppScreen();
+        } catch(err) {
             document.getElementById('loadingOverlay').style.display = 'none';
-            alert("CPF ou senha incorretos!");
-            return;
+            alert("Erro de conexão: " + err.message);
         }
-
-        // Login realizado com sucesso
-        usuarioLogado = user;
-        sessionStorage.setItem('financeProUser', JSON.stringify(user));
-        this.reset();
-        await showAppScreen();
     };
 
     async function showAppScreen() {
         document.getElementById('loadingText').innerText = "Carregando suas informações...";
         document.getElementById('loadingOverlay').style.display = 'flex';
         
-        // Exibir Nome Completo na Tela
         document.getElementById('userNameDisplay').innerText = usuarioLogado.nome_completo;
         
         document.getElementById('screenAuth').style.display = 'none';
@@ -602,8 +626,10 @@
             atualizarTelaInteira();
             document.getElementById('loadingOverlay').style.display = 'none';
         } catch (error) {
-            console.error("Erro ao conectar no banco:", error);
-            document.getElementById('loadingOverlay').innerHTML = `<p style="color:var(--danger)">Erro de conexão. Verifique se o seu banco de dados no Supabase está ativo.</p>`;
+            console.error("Erro ao puxar tabelas financeiras:", error);
+            // Evita travar se as tabelas secundárias falharem (ou não existirem ainda)
+            atualizarTelaInteira();
+            document.getElementById('loadingOverlay').style.display = 'none';
         }
     }
 
@@ -705,13 +731,6 @@
         tb.innerHTML = '';
         cartoes.forEach(c => {
             tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-        });
-    }
-
-    function atualizarSelectsCartoes() {
-        const selects = document.querySelectorAll('.cartaoSelect');
-        selects.forEach(s => {
-            s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
         });
     }
 
@@ -868,7 +887,7 @@
             }
         });
 
-        // Matriz Tabela
+        // Tabela Matriz
         const head = document.getElementById('headMatriz');
         head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
         const body = document.getElementById('bodyMatriz'); body.innerHTML = '';
@@ -906,7 +925,6 @@
         });
     }
 
-    // --- FATURAS ---
     function renderFaturas() {
         const tb = document.querySelector('#tabelaFaturas tbody'); tb.innerHTML = '';
         if(cartoes.length === 0) { tb.innerHTML = `<tr><td colspan="7">Cadastre cartões primeiro.</td></tr>`; return; }
@@ -956,7 +974,6 @@
     async function pagarFat(k) {
         const dt = document.getElementById(`dt_${k}`).value;
         if(!dt) return;
-        
         faturasPagas[k] = { data: dt };
         renderFaturas();
         await supabase.from('faturas_pagas').upsert([{ chave: k, data: dt }]);
@@ -966,6 +983,13 @@
         delete faturasPagas[k];
         renderFaturas();
         await supabase.from('faturas_pagas').delete().eq('chave', k);
+    }
+
+    function atualizarSelectsCartoes() {
+        const selects = document.querySelectorAll('.cartaoSelect');
+        selects.forEach(s => {
+            s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
+        });
     }
 
     function exportarParaExcel() {
