@@ -3,63 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Pro - Controle Fixo e Variável na Nuvem</title>
-    <!-- Font Awesome para Ícones -->
+    <title>Finance Pro - Login & Provisões na Nuvem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts - Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- SheetJS (XLSX) via CDN para Exportação -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <!-- Supabase SDK via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
-            /* Paleta Principal: Roxa */
-            --primary: #6b21a8;        /* Roxo Escuro (Primário) */
-            --primary-hover: #581c87;  /* Roxo mais escuro */
-            --primary-light: #f3e8ff;  /* Roxo bem clarinho (fundo) */
-            
-            --bg-global: #f8fafc;
-            --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            
-            /* Cores de Status */
-            --success: #10b981;
-            --success-light: #d1fae5;
-            --danger: #ef4444;
-            --danger-light: #fee2e2;
-            --warning: #f59e0b;
-            --warning-light: #fef3c7;
-            
-            /* Cores Distintas para Gráficos e Setores */
-            --color-academia: #3b82f6;     /* Azul */
-            --color-comida: #f59e0b;       /* Laranja */
-            --color-farmacia: #ef4444;     /* Vermelho */
-            --color-transporte: #14b8a6;   /* Turquesa */
-            --color-moradia: #8b5cf6;      /* Roxo */
-            --color-lazer: #ec4899;        /* Rosa */
-            --color-roupa: #06b6d4;        /* Ciano */
-            --color-presente: #f43f5e;     /* Coral */
-            --color-assinatura: #84cc16;   /* Verde Lima */
-            --color-educacao: #eab308;     /* Amarelo */
-            --color-outros: #64748b;       /* Cinza */
-            
-            --chart-fixo: #8b5cf6;         
-            --chart-variavel: #3b82f6;     
+            --primary: #6b21a8; --primary-hover: #581c87; --primary-light: #f3e8ff;
+            --bg-global: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
+            --success: #10b981; --success-light: #d1fae5; --danger: #ef4444; --danger-light: #fee2e2;
+            --warning: #f59e0b; --warning-light: #fef3c7;
+            --chart-fixo: #8b5cf6; --chart-variavel: #3b82f6;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--bg-global); color: var(--text-main); font-family: 'Inter', sans-serif; padding: 24px; line-height: 1.5; }
-        
-        /* Containers de Telas */
         .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
         
-        /* Tela de Autenticação */
         .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
         .auth-card { background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 450px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .auth-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 24px; }
@@ -116,8 +79,6 @@
         .badge-status.paga { background-color: var(--success-light); color: var(--success); }
         .badge-status.pendente { background-color: var(--warning-light); color: var(--warning); }
         .badge-status.atraso { background-color: var(--danger-light); color: var(--danger); }
-        .badge-fixo { background-color: var(--chart-fixo); }
-        .badge-variavel { background-color: var(--chart-variavel); }
 
         .btn-action-del { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px 8px; border-radius: 4px; }
         .btn-action-del:hover { color: var(--danger); background: #fef2f2; }
@@ -136,7 +97,7 @@
         .inline-pay-form { display: flex; align-items: center; gap: 8px; }
         .inline-pay-form input { padding: 6px 10px; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 6px; outline: none; width: 130px; }
 
-        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 600; color: var(--primary); flex-direction: column; gap: 10px; }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 600; color: var(--primary); flex-direction: column; gap: 10px; transition: opacity 0.3s; }
     </style>
 </head>
 <body>
@@ -148,7 +109,6 @@
 
 <!-- TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
 <div id="screenAuth" class="auth-wrapper" style="display: none;">
-    <!-- CARD DE LOGIN -->
     <div id="cardLogin" class="auth-card">
         <div class="auth-title"><i class="fa-solid fa-lock"></i> Acessar Finance Pro</div>
         <form id="formLogin">
@@ -165,7 +125,6 @@
         <div class="auth-toggle" onclick="toggleAuthCards()">Não tem conta? <span>Cadastre-se aqui</span></div>
     </div>
 
-    <!-- CARD DE CADASTRO -->
     <div id="cardRegister" class="auth-card" style="display: none;">
         <div class="auth-title"><i class="fa-solid fa-user-plus"></i> Criar Nova Conta</div>
         <form id="formRegister">
@@ -209,7 +168,6 @@
         </div>
     </header>
 
-    <!-- RESUMO CONSOLIDADO GLOBAL -->
     <div class="summary-cards">
         <div class="card">
             <div class="card-label">Total Fixo (Próx 12m)</div>
@@ -229,7 +187,6 @@
         </div>
     </div>
 
-    <!-- ABAS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="alterarAba('aba-variavel', this)"><i class="fa-solid fa-bag-shopping"></i> Custo Variável</button>
         <button class="tab-btn" onclick="alterarAba('aba-fixo', this)"><i class="fa-solid fa-house-chimney"></i> Custo Fixo</button>
@@ -244,14 +201,8 @@
             <div class="panel-title">Adicionar Custo Variável</div>
             <form id="formVariavel">
                 <div class="grid-form">
-                    <div class="form-group">
-                        <label>Data</label>
-                        <input type="date" id="dataVar" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="descVar" required placeholder="Ex: Terno, Restaurante">
-                    </div>
+                    <div class="form-group"><label>Data</label><input type="date" id="dataVar" required></div>
+                    <div class="form-group"><label>Descrição</label><input type="text" id="descVar" required placeholder="Ex: Terno, Restaurante"></div>
                     <div class="form-group">
                         <label>Categoria</label>
                         <select id="catVar" required>
@@ -273,10 +224,7 @@
                             <option value="Crédito Parcelado">Crédito Parcelado</option>
                         </select>
                     </div>
-                    <div class="form-group" id="containerCartaoVar" style="display: none;">
-                        <label>Cartão</label>
-                        <select id="cartaoVar" class="cartaoSelect"></select>
-                    </div>
+                    <div class="form-group" id="containerCartaoVar" style="display: none;"><label>Cartão</label><select id="cartaoVar" class="cartaoSelect"></select></div>
                     <div class="form-group" style="grid-column: 1 / -1; max-width: 450px;">
                         <label>Modo de Preenchimento</label>
                         <div class="radio-group">
@@ -284,22 +232,11 @@
                             <label><input type="radio" name="modoCalcVar" value="parcela" onchange="calcularDinâmico('Var')"> Informar Parcela</label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Total (R$)</label>
-                        <input type="number" step="0.01" id="valTotalVar" required oninput="calcularDinâmico('Var')">
-                    </div>
-                    <div class="form-group">
-                        <label>Qtd Parcelas</label>
-                        <input type="number" id="qtdParcVar" value="1" min="1" required oninput="calcularDinâmico('Var')">
-                    </div>
-                    <div class="form-group">
-                        <label>Parcela (R$)</label>
-                        <input type="number" step="0.01" id="valParcVar" readonly>
-                    </div>
+                    <div class="form-group"><label>Total (R$)</label><input type="number" step="0.01" id="valTotalVar" required oninput="calcularDinâmico('Var')"></div>
+                    <div class="form-group"><label>Qtd Parcelas</label><input type="number" id="qtdParcVar" value="1" min="1" required oninput="calcularDinâmico('Var')"></div>
+                    <div class="form-group"><label>Parcela (R$)</label><input type="number" step="0.01" id="valParcVar" readonly></div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary">Salvar Custo Variável</button>
-                </div>
+                <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary">Salvar Custo Variável</button></div>
             </form>
         </div>
         <div class="panel">
@@ -319,14 +256,8 @@
             <div class="panel-title">Adicionar Custo Fixo Mensal</div>
             <form id="formFixo">
                 <div class="grid-form">
-                    <div class="form-group">
-                        <label>Data de Início</label>
-                        <input type="date" id="dataFix" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" id="descFix" required placeholder="Ex: Conta de Luz, Aluguel">
-                    </div>
+                    <div class="form-group"><label>Data de Início</label><input type="date" id="dataFix" required></div>
+                    <div class="form-group"><label>Descrição</label><input type="text" id="descFix" required placeholder="Ex: Conta de Luz, Aluguel"></div>
                     <div class="form-group">
                         <label>Categoria</label>
                         <select id="catFix" required>
@@ -348,22 +279,11 @@
                             <option value="Crédito Fixo">Cartão de Crédito (Recorrente)</option>
                         </select>
                     </div>
-                    <div class="form-group" id="containerCartaoFix" style="display: none;">
-                        <label>Cartão Vinculado</label>
-                        <select id="cartaoFix" class="cartaoSelect"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Valor Mensal Fixo (R$)</label>
-                        <input type="number" step="0.01" id="valMensalFix" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label>Meses de Recorrência (Duração)</label>
-                        <input type="number" id="qtdMesesFix" value="12" min="1" required title="Use 12 para projetar 1 ano inteiro">
-                    </div>
+                    <div class="form-group" id="containerCartaoFix" style="display: none;"><label>Cartão Vinculado</label><select id="cartaoFix" class="cartaoSelect"></select></div>
+                    <div class="form-group"><label>Valor Mensal Fixo (R$)</label><input type="number" step="0.01" id="valMensalFix" required placeholder="0.00"></div>
+                    <div class="form-group"><label>Meses de Recorrência</label><input type="number" id="qtdMesesFix" value="12" min="1" required title="Use 12 para projetar 1 ano"></div>
                 </div>
-                <div style="margin-top: 20px;">
-                    <button type="submit" class="btn btn-primary" style="background-color: var(--chart-fixo);">Salvar Custo Fixo</button>
-                </div>
+                <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary" style="background-color: var(--chart-fixo);">Salvar Custo Fixo</button></div>
             </form>
         </div>
         <div class="panel">
@@ -380,14 +300,8 @@
     <!-- ABA 3: DASHBOARD CONSOLIDADO -->
     <div id="aba-dashboard" class="tab-content">
         <div class="charts-row">
-            <div class="chart-box">
-                <div class="panel-title">Evolução Mensal (Fixo vs Variável)</div>
-                <div style="height: calc(100% - 40px);"><canvas id="graficoBarras"></canvas></div>
-            </div>
-            <div class="chart-box">
-                <div class="panel-title">Proporção Geral (12m)</div>
-                <div style="height: calc(100% - 40px);"><canvas id="graficoRosca"></canvas></div>
-            </div>
+            <div class="chart-box"><div class="panel-title">Evolução Mensal (Fixo vs Variável)</div><div style="height: calc(100% - 40px);"><canvas id="graficoBarras"></canvas></div></div>
+            <div class="chart-box"><div class="panel-title">Proporção Geral (12m)</div><div style="height: calc(100% - 40px);"><canvas id="graficoRosca"></canvas></div></div>
         </div>
         <div class="panel">
             <div class="panel-title">Matriz Financeira Consolidada</div>
@@ -404,14 +318,9 @@
     <div id="aba-faturas" class="tab-content">
         <div class="panel">
             <div class="panel-title">Controle de Faturas de Cartão (Fixos e Variáveis)</div>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; margin-top:-10px;">
-                Faturas projetadas com base nos custos fixos e variáveis vinculados a cartões.
-            </p>
             <div class="table-responsive">
                 <table id="tabelaFaturas">
-                    <thead>
-                        <tr><th>Cartão</th><th>Competência</th><th>Vencimento</th><th>Valor Fatura</th><th>Status</th><th>Data Pgto</th><th>Ações</th></tr>
-                    </thead>
+                    <thead><tr><th>Cartão</th><th>Competência</th><th>Vencimento</th><th>Valor Fatura</th><th>Status</th><th>Data Pgto</th><th>Ações</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -425,8 +334,8 @@
             <form id="formCartao">
                 <div class="grid-form" style="grid-template-columns: 2fr 1fr 1fr;">
                     <div class="form-group"><label>Nome do Cartão</label><input type="text" id="nomeCartao" required></div>
-                    <div class="form-group"><label>Melhor Dia (Fechamento)</label><input type="number" id="melhorDia" required min="1" max="31"></div>
-                    <div class="form-group"><label>Dia Vencimento</label><input type="number" id="diaVenc" required min="1" max="31"></div>
+                    <div class="form-group"><label>Melhor Dia</label><input type="number" id="melhorDia" required min="1" max="31"></div>
+                    <div class="form-group"><label>Vencimento</label><input type="number" id="diaVenc" required min="1" max="31"></div>
                 </div>
                 <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary">Cadastrar Cartão</button></div>
             </form>
@@ -441,23 +350,14 @@
 </div>
 
 <script>
-    // ==========================================
-    // CONFIGURAÇÃO REAL INJETADA DO SUPABASE
-    // ==========================================
     const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
     
     let supabase = null;
     let bancoNuvemAtivo = false;
-    // ==========================================
 
-    let lancamentos = [];
-    let cartoes = [];
-    let faturasPagas = {};
-    let usuarioLogado = null;
-
-    let chartBar = null;
-    let chartDoughnut = null;
+    let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null;
+    let chartBar = null; let chartDoughnut = null;
 
     const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const coresDistintasGrafico = {
@@ -469,99 +369,73 @@
     };
 
     window.onload = async function() {
+        // FAILSAFE: Ocultar o overlay de carregamento à força após 3 segundos para evitar tela travada
+        setTimeout(() => {
+            const loader = document.getElementById('loadingOverlay');
+            if(loader && loader.style.display !== 'none' && !usuarioLogado) {
+                loader.style.display = 'none';
+                document.getElementById('screenAuth').style.display = 'flex';
+            }
+        }, 3000);
+
         if (document.getElementById('dataVar')) document.getElementById('dataVar').valueAsDate = new Date();
         if (document.getElementById('dataFix')) document.getElementById('dataFix').valueAsDate = new Date();
         
         try {
-            // Inicializar o cliente do Supabase com tratamento de erros de carregamento assíncronos
             if (window.supabase) {
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 bancoNuvemAtivo = true;
-            } else {
-                throw new Error("A biblioteca do Supabase falhou ao carregar.");
             }
 
-            ajustarFormulario('Var');
-            ajustarFormulario('Fix');
+            ajustarFormulario('Var'); ajustarFormulario('Fix');
 
-            // Verificar se o usuário já possui sessão ativa salva no navegador
             const sessionUser = sessionStorage.getItem('financeProUser');
             if (sessionUser) {
                 usuarioLogado = JSON.parse(sessionUser);
                 await showAppScreen();
             } else {
-                // Se não estiver logado, libera o login IMEDIATAMENTE sem travar no carregamento
                 document.getElementById('loadingOverlay').style.display = 'none';
                 document.getElementById('screenAuth').style.display = 'flex';
                 document.getElementById('screenApp').style.display = 'none';
             }
         } catch (error) {
-            console.error("Erro na inicialização:", error);
+            console.error(error);
             document.getElementById('loadingOverlay').style.display = 'none';
             document.getElementById('screenAuth').style.display = 'flex';
             document.getElementById('screenApp').style.display = 'none';
         }
     };
 
-    // --- CONTROLE DE ALTERNAÇÃO DE TELAS DE LOGIN/REGISTRO ---
     function toggleAuthCards() {
-        const cardLogin = document.getElementById('cardLogin');
-        const cardRegister = document.getElementById('cardRegister');
-        if(cardLogin.style.display === 'none') {
-            cardLogin.style.display = 'block';
-            cardRegister.style.display = 'none';
-        } else {
-            cardLogin.style.display = 'none';
-            cardRegister.style.display = 'block';
-        }
+        const cardL = document.getElementById('cardLogin'); const cardR = document.getElementById('cardRegister');
+        if(cardL.style.display === 'none') { cardL.style.display = 'block'; cardR.style.display = 'none'; } 
+        else { cardL.style.display = 'none'; cardR.style.display = 'block'; }
     }
 
-    // --- LÓGICA DE CADASTRO ---
     document.getElementById('formRegister').onsubmit = async function(e) {
         e.preventDefault();
         const nome = document.getElementById('regNome').value.trim();
         const cpf = document.getElementById('regCpf').value.trim().replace(/\D/g, '');
         const senha = document.getElementById('regSenha').value;
 
-        if (cpf.length !== 11) { alert("CPF inválido! Digite os 11 números."); return; }
-        
-        const regexEspecial = /[\!@#$%^&*(),.?":{}|<>_\-\[\]]/;
-        if (!regexEspecial.test(senha)) {
-            alert("A senha precisa conter pelo menos um caractere especial (ex: @, #, $, !).");
-            return;
-        }
+        if (cpf.length !== 11) { alert("CPF inválido!"); return; }
+        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(senha)) { alert("A senha precisa conter caractere especial."); return; }
 
         document.getElementById('loadingText').innerText = "Processando cadastro...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            const { data: usuarioExistente } = await supabase.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
-            
-            if (usuarioExistente) {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                alert("Este CPF já possui cadastro no sistema!");
-                return;
-            }
+            const { data: userExist } = await supabase.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
+            if (userExist) { document.getElementById('loadingOverlay').style.display = 'none'; alert("CPF já cadastrado!"); return; }
 
-            const novoUser = { id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha };
-            const { error } = await supabase.from('usuarios').insert([novoUser]);
-
+            const { error } = await supabase.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha }]);
             document.getElementById('loadingOverlay').style.display = 'none';
 
-            if (error) {
-                alert("Erro ao realizar cadastro: " + error.message);
-            } else {
-                alert("Cadastro realizado com sucesso! Faça seu login.");
-                this.reset();
-                toggleAuthCards();
-            }
-        } catch(err) {
-            document.getElementById('loadingOverlay').style.display = 'none';
-            alert("Erro de comunicação com o Supabase: " + err.message);
-        }
+            if (error) alert("Erro: Você criou a tabela 'usuarios' no Supabase?");
+            else { alert("Sucesso! Faça login."); this.reset(); toggleAuthCards(); }
+        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Erro: " + err.message); }
     };
 
-    // --- LÓGICA DE LOGIN ---
     document.getElementById('formLogin').onsubmit = async function(e) {
         e.preventDefault();
         const cpf = document.getElementById('loginCpf').value.trim().replace(/\D/g, '');
@@ -572,91 +446,51 @@
 
         try {
             const { data: user, error } = await supabase.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
+            if (error || !user) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Credenciais incorretas!"); return; }
 
-            if (error || !user) {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                alert("CPF ou senha incorretos!");
-                return;
-            }
-
-            usuarioLogado = user;
-            sessionStorage.setItem('financeProUser', JSON.stringify(user));
-            this.reset();
-            await showAppScreen();
-        } catch(err) {
-            document.getElementById('loadingOverlay').style.display = 'none';
-            alert("Erro de conexão: " + err.message);
-        }
+            usuarioLogado = user; sessionStorage.setItem('financeProUser', JSON.stringify(user));
+            this.reset(); await showAppScreen();
+        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Erro: " + err.message); }
     };
 
     async function showAppScreen() {
-        document.getElementById('loadingText').innerText = "Carregando suas informações...";
+        document.getElementById('loadingText').innerText = "Carregando dados...";
         document.getElementById('loadingOverlay').style.display = 'flex';
-        
         document.getElementById('userNameDisplay').innerText = usuarioLogado.nome_completo;
-        
         document.getElementById('screenAuth').style.display = 'none';
         document.getElementById('screenApp').style.display = 'block';
-
         await carregarDadosDaNuvem();
     }
 
     function logout() {
-        sessionStorage.removeItem('financeProUser');
-        usuarioLogado = null;
-        document.getElementById('screenApp').style.display = 'none';
-        document.getElementById('screenAuth').style.display = 'flex';
+        sessionStorage.removeItem('financeProUser'); usuarioLogado = null;
+        document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'flex';
     }
 
-    // --- COMUNICAÇÃO COM O SUPABASE (DADOS DO APP) ---
     async function carregarDadosDaNuvem() {
         try {
-            const { data: dataCartoes } = await supabase.from('cartoes').select('*');
-            if (dataCartoes) cartoes = dataCartoes;
-
-            const { data: dataLanc } = await supabase.from('lancamentos').select('*');
-            if (dataLanc) lancamentos = dataLanc;
-
-            const { data: dataFaturas } = await supabase.from('faturas_pagas').select('*');
-            if (dataFaturas) {
-                faturasPagas = {};
-                dataFaturas.forEach(f => faturasPagas[f.chave] = { data: f.data });
-            }
-
-            atualizarTelaInteira();
-            document.getElementById('loadingOverlay').style.display = 'none';
-        } catch (error) {
-            console.error("Erro ao puxar tabelas financeiras:", error);
-            // Evita travar se as tabelas secundárias falharem (ou não existirem ainda)
-            atualizarTelaInteira();
-            document.getElementById('loadingOverlay').style.display = 'none';
-        }
+            const { data: dC } = await supabase.from('cartoes').select('*'); if (dC) cartoes = dC;
+            const { data: dL } = await supabase.from('lancamentos').select('*'); if (dL) lancamentos = dL;
+            const { data: dF } = await supabase.from('faturas_pagas').select('*');
+            if (dF) { faturasPagas = {}; dF.forEach(f => faturasPagas[f.chave] = { data: f.data }); }
+        } catch (e) { console.error(e); }
+        atualizarTelaInteira(); document.getElementById('loadingOverlay').style.display = 'none';
     }
 
     function atualizarTelaInteira() {
-        atualizarSelectsCartoes();
-        renderCartoes();
-        renderTabelasLancamentos();
-        calcularTopCards();
-        
-        const abaAberta = document.querySelector('.tab-content.active').id;
-        if(abaAberta === 'aba-dashboard') renderDashboard();
-        if(abaAberta === 'aba-faturas') renderFaturas();
+        atualizarSelectsCartoes(); renderCartoes(); renderTabelasLancamentos(); calcularTopCards();
+        const aba = document.querySelector('.tab-content.active').id;
+        if(aba === 'aba-dashboard') renderDashboard(); if(aba === 'aba-faturas') renderFaturas();
     }
 
-    // --- FUNÇÕES DE NAVEGAÇÃO E UI ---
     function formatReal(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-
     function Skinner(v) { return parseFloat(v) || 0; }
 
     function alterarAba(id, btn) {
         document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).style.display = 'block';
-        btn.classList.add('active');
-
-        if(id === 'aba-dashboard') renderDashboard();
-        if(id === 'aba-faturas') renderFaturas();
+        document.getElementById(id).style.display = 'block'; btn.classList.add('active');
+        if(id === 'aba-dashboard') renderDashboard(); if(id === 'aba-faturas') renderFaturas();
         if(id === 'aba-variavel' || id === 'aba-fixo') renderTabelasLancamentos();
     }
 
@@ -664,16 +498,9 @@
         if(tipo === 'Var') {
             const modo = document.querySelector('input[name="modoCalcVar"]:checked').value;
             const qtd = parseInt(document.getElementById('qtdParcVar').value) || 1;
-            const inTot = document.getElementById('valTotalVar');
-            const inParc = document.getElementById('valParcVar');
-
-            if (modo === 'total') {
-                inTot.readOnly = false; inParc.readOnly = true;
-                inParc.value = (Skinner(inTot.value) / qtd).toFixed(2);
-            } else {
-                inParc.readOnly = false; inTot.readOnly = true;
-                inTot.value = (Skinner(inParc.value) * qtd).toFixed(2);
-            }
+            const inTot = document.getElementById('valTotalVar'); const inParc = document.getElementById('valParcVar');
+            if (modo === 'total') { inTot.readOnly = false; inParc.readOnly = true; inParc.value = (Skinner(inTot.value) / qtd).toFixed(2); } 
+            else { inParc.readOnly = false; inTot.readOnly = true; inTot.value = (Skinner(inParc.value) * qtd).toFixed(2); }
         }
     }
 
@@ -681,199 +508,94 @@
         const pgto = document.getElementById(`pgto${tipo}`).value;
         const contCartao = document.getElementById(`containerCartao${tipo}`);
         const selCartao = document.getElementById(`cartao${tipo}`);
-        
-        if (pgto.includes('Crédito')) {
-            contCartao.style.display = 'flex';
-            selCartao.required = true;
-        } else {
-            contCartao.style.display = 'none';
-            selCartao.required = false;
-            selCartao.value = '';
-        }
-
+        if (pgto.includes('Crédito')) { contCartao.style.display = 'flex'; selCartao.required = true; } 
+        else { contCartao.style.display = 'none'; selCartao.required = false; selCartao.value = ''; }
         if(tipo === 'Var') {
             const qtd = document.getElementById('qtdParcVar');
-            if (pgto === 'Crédito Parcelado') {
-                qtd.disabled = false; if(qtd.value < 2) qtd.value = 2;
-            } else {
-                qtd.disabled = true; qtd.value = 1;
-            }
+            if (pgto === 'Crédito Parcelado') { qtd.disabled = false; if(qtd.value < 2) qtd.value = 2; } 
+            else { qtd.disabled = true; qtd.value = 1; }
             calcularDinâmico('Var');
         }
     }
 
-    // --- CARTÕES ---
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
-        const obj = {
-            id: Date.now().toString(),
-            nome: document.getElementById('nomeCartao').value,
-            melhorDia: parseInt(document.getElementById('melhorDia').value),
-            diaVenc: parseInt(document.getElementById('diaVenc').value)
-        };
-        
-        cartoes.push(obj);
-        this.reset(); 
-        atualizarTelaInteira();
-        await supabase.from('cartoes').insert([obj]);
+        const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
+        cartoes.push(obj); this.reset(); atualizarTelaInteira(); await supabase.from('cartoes').insert([obj]);
     };
 
     async function delCartao(id) {
-        if(confirm("Excluir cartão?")) {
-            cartoes = cartoes.filter(c => c.id !== id);
-            atualizarTelaInteira();
-            await supabase.from('cartoes').delete().eq('id', id);
-        }
+        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await supabase.from('cartoes').delete().eq('id', id); }
     }
 
     function renderCartoes() {
-        const tb = document.querySelector('#tabelaCartoes tbody');
-        tb.innerHTML = '';
-        cartoes.forEach(c => {
-            tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
-        });
+        const tb = document.querySelector('#tabelaCartoes tbody'); tb.innerHTML = '';
+        cartoes.forEach(c => tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
     }
 
-    // --- LANÇAMENTOS ---
+    function atualizarSelectsCartoes() {
+        document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
+    }
+
     document.getElementById('formVariavel').onsubmit = async function(e) {
-        e.preventDefault();
-        const pgto = document.getElementById('pgtoVar').value;
-        const idCartao = document.getElementById('cartaoVar').value;
+        e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
-
-        const obj = {
-            id: Date.now().toString(),
-            tipo: 'Variavel',
-            data: document.getElementById('dataVar').value,
-            descricao: document.getElementById('descVar').value,
-            categoria: document.getElementById('catVar').value,
-            formaPagamento: pgto,
-            idCartao: idCartao || null,
-            valorParcela: parseFloat(document.getElementById('valParcVar').value),
-            qtdParcelas: parseInt(document.getElementById('qtdParcVar').value)
-        };
-
-        lancamentos.push(obj);
-        this.reset(); document.getElementById('dataVar').valueAsDate = new Date();
-        ajustarFormulario('Var'); 
-        atualizarTelaInteira();
-        await supabase.from('lancamentos').insert([obj]);
+        const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
+        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); await supabase.from('lancamentos').insert([obj]);
     };
 
     document.getElementById('formFixo').onsubmit = async function(e) {
-        e.preventDefault();
-        const pgto = document.getElementById('pgtoFix').value;
-        const idCartao = document.getElementById('cartaoFix').value;
+        e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
-
-        const obj = {
-            id: Date.now().toString(),
-            tipo: 'Fixo',
-            data: document.getElementById('dataFix').value,
-            descricao: document.getElementById('descFix').value,
-            categoria: document.getElementById('catFix').value,
-            formaPagamento: pgto,
-            idCartao: idCartao || null,
-            valorParcela: parseFloat(document.getElementById('valMensalFix').value),
-            qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value)
-        };
-
-        lancamentos.push(obj);
-        this.reset(); document.getElementById('dataFix').valueAsDate = new Date();
-        ajustarFormulario('Fix'); 
-        atualizarTelaInteira();
-        await supabase.from('lancamentos').insert([obj]);
+        const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
+        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); await supabase.from('lancamentos').insert([obj]);
     };
 
     async function delLanc(id) {
-        if(confirm("Excluir lançamento?")) {
-            lancamentos = lancamentos.filter(l => l.id !== id);
-            atualizarTelaInteira();
-            await supabase.from('lancamentos').delete().eq('id', id);
-        }
+        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); await supabase.from('lancamentos').delete().eq('id', id); }
     }
 
     function renderTabelasLancamentos() {
         const dictC = Object.fromEntries(cartoes.map(c => [c.id, c.nome]));
-        
         const tbVar = document.querySelector('#tabelaVar tbody'); tbVar.innerHTML = '';
-        lancamentos.filter(l => l.tipo === 'Variavel').reverse().forEach(l => {
-            tbVar.innerHTML += `<tr>
-                <td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
-                <td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--primary)'}">${l.categoria}</span></td>
-                <td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td>
-                <td>${formatReal(l.valorParcela)}</td><td>${l.qtdParcelas}x</td>
-                <td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td>
-                <td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`;
-        });
-
+        lancamentos.filter(l => l.tipo === 'Variavel').reverse().forEach(l => tbVar.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--primary)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)}</td><td>${l.qtdParcelas}x</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
         const tbFix = document.querySelector('#tabelaFix tbody'); tbFix.innerHTML = '';
-        lancamentos.filter(l => l.tipo === 'Fixo').reverse().forEach(l => {
-            tbFix.innerHTML += `<tr>
-                <td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td>
-                <td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--chart-fixo)'}">${l.categoria}</span></td>
-                <td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td>
-                <td>${formatReal(l.valorParcela)} /mês</td><td>${l.qtdParcelas} meses</td>
-                <td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td>
-                <td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`;
-        });
+        lancamentos.filter(l => l.tipo === 'Fixo').reverse().forEach(l => tbFix.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--chart-fixo)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)} /mês</td><td>${l.qtdParcelas} meses</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
     }
 
-    // --- PROVISÕES ---
     function getMesAbsolutoBase(l) {
-        const d = new Date(l.data+'T00:00:00');
-        const mesBase = d.getFullYear() * 12 + d.getMonth();
-        let shift = 0;
-        if (l.formaPagamento.includes('Crédito')) {
-            const c = cartoes.find(x => x.id === l.idCartao);
-            const melhorDia = c ? c.melhorDia : 31;
-            if (d.getDate() >= melhorDia) shift = 1;
-        }
+        const d = new Date(l.data+'T00:00:00'); const mesBase = d.getFullYear() * 12 + d.getMonth(); let shift = 0;
+        if (l.formaPagamento.includes('Crédito')) { const c = cartoes.find(x => x.id === l.idCartao); const melhorDia = c ? c.melhorDia : 31; if (d.getDate() >= melhorDia) shift = 1; }
         return mesBase + shift;
     }
 
     function getJanela12m() {
         let arr = []; const hoje = new Date();
-        for(let i=0; i<12; i++) {
-            let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1);
-            arr.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, obj: d });
-        }
+        for(let i=0; i<12; i++) { let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1); arr.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, obj: d }); }
         return arr;
     }
 
     function calcularTopCards() {
-        const janela = getJanela12m();
-        let sumF = 0, sumV = 0, proxMes = 0;
-        
+        const janela = getJanela12m(); let sumF = 0, sumV = 0, proxMes = 0;
         lancamentos.forEach(l => {
             const start = getMesAbsolutoBase(l);
             for(let i=0; i<l.qtdParcelas; i++) {
                 let mesParcela = start + i;
                 if(janela.find(m => m.chave === mesParcela)) {
-                    if(l.tipo === 'Fixo') sumF += l.valorParcela;
-                    if(l.tipo === 'Variavel') sumV += l.valorParcela;
+                    if(l.tipo === 'Fixo') sumF += l.valorParcela; if(l.tipo === 'Variavel') sumV += l.valorParcela;
                     if(mesParcela === janela[0].chave) proxMes += l.valorParcela;
                 }
             }
         });
-        
-        document.getElementById('sum-fixo-12m').innerText = formatReal(sumF);
-        document.getElementById('sum-variavel-12m').innerText = formatReal(sumV);
-        document.getElementById('sum-total-12m').innerText = formatReal(sumF + sumV);
-        document.getElementById('sum-prox-mes').innerText = formatReal(proxMes);
+        document.getElementById('sum-fixo-12m').innerText = formatReal(sumF); document.getElementById('sum-variavel-12m').innerText = formatReal(sumV); document.getElementById('sum-total-12m').innerText = formatReal(sumF + sumV); document.getElementById('sum-prox-mes').innerText = formatReal(proxMes);
     }
 
     function renderDashboard() {
         const janela = getJanela12m();
-        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))];
-        let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
-        
+        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))]; let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
         let matrizF = {}, matrizV = {}, totalF = {}, totalV = {}, totalGeral = {};
         janela.forEach(m => { totalF[m.chave]=0; totalV[m.chave]=0; totalGeral[m.chave]=0; });
-        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); });
-        catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
+        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); }); catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
 
         lancamentos.forEach(l => {
             const start = getMesAbsolutoBase(l);
@@ -887,9 +609,7 @@
             }
         });
 
-        // Tabela Matriz
-        const head = document.getElementById('headMatriz');
-        head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
+        const head = document.getElementById('headMatriz'); head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
         const body = document.getElementById('bodyMatriz'); body.innerHTML = '';
         
         if(catFixo.length > 0) {
@@ -904,25 +624,14 @@
         }
         body.innerHTML += `<tr class="row-total-table"><td>CONSOLIDADO TOTAL</td>${janela.map(m=>`<td>${formatReal(totalGeral[m.chave])}</td>`).join('')}</tr>`;
 
-        // Gráficos
-        const labels = janela.map(m=>m.label);
-        let datasetsBarras = [];
+        const labels = janela.map(m=>m.label); let datasetsBarras = [];
         catFixo.forEach(c => datasetsBarras.push({ label: `Fixo: ${c}`, data: janela.map(m => matrizF[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-fixo)' }));
         catVar.forEach(c => datasetsBarras.push({ label: `Var: ${c}`, data: janela.map(m => matrizV[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-variavel)' }));
 
-        if(chartBar) chartBar.destroy();
-        chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), {
-            type: 'bar', data: { labels, datasets: datasetsBarras },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
-        });
+        if(chartBar) chartBar.destroy(); chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), { type: 'bar', data: { labels, datasets: datasetsBarras }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } });
 
-        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0);
-        const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
-        if(chartDoughnut) chartDoughnut.destroy();
-        chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), {
-            type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-        });
+        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0); const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
+        if(chartDoughnut) chartDoughnut.destroy(); chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), { type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
     }
 
     function renderFaturas() {
@@ -930,79 +639,31 @@
         if(cartoes.length === 0) { tb.innerHTML = `<tr><td colspan="7">Cadastre cartões primeiro.</td></tr>`; return; }
 
         let janelaFat = []; const hoje = new Date();
-        for(let i=-3; i<=12; i++) {
-            let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1);
-            janelaFat.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, ano: d.getFullYear(), mes: d.getMonth() });
-        }
+        for(let i=-3; i<=12; i++) { let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1); janelaFat.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, ano: d.getFullYear(), mes: d.getMonth() }); }
 
-        let matrizFaturas = {};
-        cartoes.forEach(c => { matrizFaturas[c.id] = {}; janelaFat.forEach(m => matrizFaturas[c.id][m.chave]=0); });
+        let matrizFaturas = {}; cartoes.forEach(c => { matrizFaturas[c.id] = {}; janelaFat.forEach(m => matrizFaturas[c.id][m.chave]=0); });
 
         lancamentos.filter(l => l.formaPagamento.includes('Crédito') && l.idCartao).forEach(l => {
             const start = getMesAbsolutoBase(l);
-            for(let i=0; i<l.qtdParcelas; i++) {
-                if(matrizFaturas[l.idCartao] && matrizFaturas[l.idCartao][start+i] !== undefined) {
-                    matrizFaturas[l.idCartao][start+i] += l.valorParcela;
-                }
-            }
+            for(let i=0; i<l.qtdParcelas; i++) { if(matrizFaturas[l.idCartao] && matrizFaturas[l.idCartao][start+i] !== undefined) matrizFaturas[l.idCartao][start+i] += l.valorParcela; }
         });
 
         hoje.setHours(0,0,0,0);
         janelaFat.forEach(m => {
             cartoes.forEach(c => {
-                const val = matrizFaturas[c.id][m.chave];
-                if(val === 0) return;
-
-                const fatKey = `${c.id}_${m.chave}`;
-                const pago = faturasPagas[fatKey];
-                const dv = new Date(m.ano, m.mes, c.diaVenc);
-
+                const val = matrizFaturas[c.id][m.chave]; if(val === 0) return;
+                const fatKey = `${c.id}_${m.chave}`; const pago = faturasPagas[fatKey]; const dv = new Date(m.ano, m.mes, c.diaVenc);
                 let status = "Pendente", cls = "pendente";
-                if(pago) { status = "Paga"; cls = "paga"; }
-                else if(hoje > dv) { status = "Atraso"; cls = "atraso"; }
+                if(pago) { status = "Paga"; cls = "paga"; } else if(hoje > dv) { status = "Atraso"; cls = "atraso"; }
 
-                tb.innerHTML += `<tr>
-                    <td><b>${c.nome}</b></td><td>${m.label}</td><td>${dv.toLocaleDateString('pt-BR')}</td>
-                    <td><b>${formatReal(val)}</b></td><td><span class="badge badge-status ${cls}">${status.toUpperCase()}</span></td>
-                    <td>${pago ? new Date(pago.data+'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td>
-                    <td>${pago ? `<button class="btn btn-secondary btn-xs" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}" value="${new Date().toISOString().split('T')[0]}"> <button class="btn btn-primary btn-xs" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td>
-                </tr>`;
+                tb.innerHTML += `<tr><td><b>${c.nome}</b></td><td>${m.label}</td><td>${dv.toLocaleDateString('pt-BR')}</td><td><b>${formatReal(val)}</b></td><td><span class="badge badge-status ${cls}">${status.toUpperCase()}</span></td><td>${pago ? new Date(pago.data+'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td><td>${pago ? `<button class="btn btn-secondary btn-xs" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}" value="${new Date().toISOString().split('T')[0]}"> <button class="btn btn-primary btn-xs" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td></tr>`;
             });
         });
     }
 
-    async function pagarFat(k) {
-        const dt = document.getElementById(`dt_${k}`).value;
-        if(!dt) return;
-        faturasPagas[k] = { data: dt };
-        renderFaturas();
-        await supabase.from('faturas_pagas').upsert([{ chave: k, data: dt }]);
-    }
-
-    async function estornarFat(k) {
-        delete faturasPagas[k];
-        renderFaturas();
-        await supabase.from('faturas_pagas').delete().eq('chave', k);
-    }
-
-    function atualizarSelectsCartoes() {
-        const selects = document.querySelectorAll('.cartaoSelect');
-        selects.forEach(s => {
-            s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join('');
-        });
-    }
-
-    function exportarParaExcel() {
-        if(lancamentos.length === 0) return alert("Sem dados.");
-        const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome]));
-        const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({
-            'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria,
-            'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'',
-            'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas
-        })));
-        const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados");
-        XLSX.writeFile(wb, "FinancePro_Export.xlsx");
-    }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await supabase.from('faturas_pagas').upsert([{ chave: k, data: dt }]); }
+    async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await supabase.from('faturas_pagas').delete().eq('chave', k); }
+    function exportarParaExcel() { if(lancamentos.length === 0) return alert("Sem dados."); const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome])); const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({ 'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria, 'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'', 'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, "FinancePro_Export.xlsx"); }
 </script>
 </body>
 </html>
