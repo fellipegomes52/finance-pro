@@ -107,7 +107,6 @@
     <p id="loadingText">Conectando ao Banco de Dados Supabase...</p>
 </div>
 
-<!-- TELA DE AUTENTICAÇÃO (LOGIN / CADASTRO) -->
 <div id="screenAuth" class="auth-wrapper" style="display: none;">
     <div id="cardLogin" class="auth-card">
         <div class="auth-title"><i class="fa-solid fa-lock"></i> Acessar Finance Pro</div>
@@ -147,7 +146,6 @@
     </div>
 </div>
 
-<!-- CONTEÚDO PRINCIPAL DO APLICATIVO -->
 <div id="screenApp" class="container" style="display: none;">
     <header>
         <div>
@@ -195,7 +193,6 @@
         <button class="tab-btn" onclick="alterarAba('aba-cartoes', this)"><i class="fa-solid fa-credit-card"></i> Cartões</button>
     </div>
 
-    <!-- ABA 1: CUSTO VARIÁVEL -->
     <div id="aba-variavel" class="tab-content active">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Variável</div>
@@ -250,7 +247,6 @@
         </div>
     </div>
 
-    <!-- ABA 2: CUSTO FIXO -->
     <div id="aba-fixo" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Fixo Mensal</div>
@@ -297,7 +293,6 @@
         </div>
     </div>
 
-    <!-- ABA 3: DASHBOARD CONSOLIDADO -->
     <div id="aba-dashboard" class="tab-content">
         <div class="charts-row">
             <div class="chart-box"><div class="panel-title">Evolução Mensal (Fixo vs Variável)</div><div style="height: calc(100% - 40px);"><canvas id="graficoBarras"></canvas></div></div>
@@ -314,10 +309,12 @@
         </div>
     </div>
 
-    <!-- ABA 4: FATURAS -->
     <div id="aba-faturas" class="tab-content">
         <div class="panel">
             <div class="panel-title">Controle de Faturas de Cartão (Fixos e Variáveis)</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; margin-top:-10px;">
+                Faturas projetadas com base nos custos fixos e variáveis vinculados a cartões.
+            </p>
             <div class="table-responsive">
                 <table id="tabelaFaturas">
                     <thead><tr><th>Cartão</th><th>Competência</th><th>Vencimento</th><th>Valor Fatura</th><th>Status</th><th>Data Pgto</th><th>Ações</th></tr></thead>
@@ -327,7 +324,6 @@
         </div>
     </div>
 
-    <!-- ABA 5: CARTÕES -->
     <div id="aba-cartoes" class="tab-content">
         <div class="panel" style="max-width: 700px;">
             <div class="panel-title">Configurar Cartões</div>
@@ -353,7 +349,7 @@
     const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
     
-    let supabase = null;
+    let dbClient = null;
     let bancoNuvemAtivo = false;
 
     let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null;
@@ -369,7 +365,7 @@
     };
 
     window.onload = async function() {
-        // FAILSAFE: Ocultar o overlay de carregamento à força após 3 segundos para evitar tela travada
+        // FAILSAFE: Ocultar o overlay à força após 3 segundos
         setTimeout(() => {
             const loader = document.getElementById('loadingOverlay');
             if(loader && loader.style.display !== 'none' && !usuarioLogado) {
@@ -383,7 +379,7 @@
         
         try {
             if (window.supabase) {
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 bancoNuvemAtivo = true;
             }
 
@@ -425,10 +421,10 @@
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            const { data: userExist } = await supabase.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
+            const { data: userExist } = await dbClient.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
             if (userExist) { document.getElementById('loadingOverlay').style.display = 'none'; alert("CPF já cadastrado!"); return; }
 
-            const { error } = await supabase.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha }]);
+            const { error } = await dbClient.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha }]);
             document.getElementById('loadingOverlay').style.display = 'none';
 
             if (error) alert("Erro: Você criou a tabela 'usuarios' no Supabase?");
@@ -445,7 +441,7 @@
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            const { data: user, error } = await supabase.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
+            const { data: user, error } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
             if (error || !user) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Credenciais incorretas!"); return; }
 
             usuarioLogado = user; sessionStorage.setItem('financeProUser', JSON.stringify(user));
@@ -469,9 +465,9 @@
 
     async function carregarDadosDaNuvem() {
         try {
-            const { data: dC } = await supabase.from('cartoes').select('*'); if (dC) cartoes = dC;
-            const { data: dL } = await supabase.from('lancamentos').select('*'); if (dL) lancamentos = dL;
-            const { data: dF } = await supabase.from('faturas_pagas').select('*');
+            const { data: dC } = await dbClient.from('cartoes').select('*'); if (dC) cartoes = dC;
+            const { data: dL } = await dbClient.from('lancamentos').select('*'); if (dL) lancamentos = dL;
+            const { data: dF } = await dbClient.from('faturas_pagas').select('*');
             if (dF) { faturasPagas = {}; dF.forEach(f => faturasPagas[f.chave] = { data: f.data }); }
         } catch (e) { console.error(e); }
         atualizarTelaInteira(); document.getElementById('loadingOverlay').style.display = 'none';
@@ -521,11 +517,11 @@
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
         const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
-        cartoes.push(obj); this.reset(); atualizarTelaInteira(); await supabase.from('cartoes').insert([obj]);
+        cartoes.push(obj); this.reset(); atualizarTelaInteira(); await dbClient.from('cartoes').insert([obj]);
     };
 
     async function delCartao(id) {
-        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await supabase.from('cartoes').delete().eq('id', id); }
+        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await dbClient.from('cartoes').delete().eq('id', id); }
     }
 
     function renderCartoes() {
@@ -541,18 +537,18 @@
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
         const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); await supabase.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); await dbClient.from('lancamentos').insert([obj]);
     };
 
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
         const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); await supabase.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); await dbClient.from('lancamentos').insert([obj]);
     };
 
     async function delLanc(id) {
-        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); await supabase.from('lancamentos').delete().eq('id', id); }
+        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); await dbClient.from('lancamentos').delete().eq('id', id); }
     }
 
     function renderTabelasLancamentos() {
@@ -661,9 +657,14 @@
         });
     }
 
-    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await supabase.from('faturas_pagas').upsert([{ chave: k, data: dt }]); }
-    async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await supabase.from('faturas_pagas').delete().eq('chave', k); }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); }
+    async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); }
     function exportarParaExcel() { if(lancamentos.length === 0) return alert("Sem dados."); const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome])); const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({ 'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria, 'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'', 'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, "FinancePro_Export.xlsx"); }
 </script>
 </body>
 </html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+print("Safe mode code updated.")}}
