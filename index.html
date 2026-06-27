@@ -98,13 +98,24 @@
         .inline-pay-form input { padding: 6px 10px; font-size: 0.85rem; border: 1px solid var(--border); border-radius: 6px; outline: none; width: 130px; }
 
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 600; color: var(--primary); flex-direction: column; gap: 10px; transition: opacity 0.3s; }
+
+        /* NOTIFICAÇÕES (TOAST) MODERNAS */
+        #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { min-width: 250px; padding: 16px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; color: white; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateX(50px); transition: all 0.3s ease; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { background-color: var(--success); }
+        .toast.error { background-color: var(--danger); }
+        .toast.warning { background-color: var(--warning); }
     </style>
 </head>
 <body>
 
+<div id="toastContainer"></div>
+
 <div id="loadingOverlay">
     <i class="fa-solid fa-circle-notch fa-spin fa-2x"></i>
     <p id="loadingText">Conectando ao Banco de Dados Supabase...</p>
+    <button onclick="forcarTelaLogin()" class="btn btn-secondary" style="margin-top: 15px; font-size: 0.9rem;">Se travar, clique aqui para ir pro Login</button>
 </div>
 
 <div id="screenAuth" class="auth-wrapper" style="display: none;">
@@ -346,6 +357,30 @@
 </div>
 
 <script>
+    // --- SISTEMA DE NOTIFICAÇÕES (TOAST) ---
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : 
+                     type === 'error' ? '<i class="fa-solid fa-circle-exclamation"></i>' : 
+                     '<i class="fa-solid fa-circle-info"></i>';
+                     
+        toast.innerHTML = `${icon} <span>${message}</span>`;
+        container.appendChild(toast);
+        
+        // Entrada animada
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        // Saída após 4 segundos
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // --- CONFIGURAÇÃO DO SUPABASE ---
     const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
     
@@ -364,13 +399,17 @@
         'Educação': '#0ea5e9', 'Saúde': '#10b981', 'Outros Fixos': '#64748b', 'Outros Variáveis': '#94a3b8'
     };
 
+    function forcarTelaLogin() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        document.getElementById('screenAuth').style.display = 'flex';
+        document.getElementById('screenApp').style.display = 'none';
+    }
+
     window.onload = async function() {
-        // FAILSAFE: Ocultar o overlay à força após 3 segundos
         setTimeout(() => {
             const loader = document.getElementById('loadingOverlay');
             if(loader && loader.style.display !== 'none' && !usuarioLogado) {
-                loader.style.display = 'none';
-                document.getElementById('screenAuth').style.display = 'flex';
+                forcarTelaLogin();
             }
         }, 3000);
 
@@ -390,15 +429,11 @@
                 usuarioLogado = JSON.parse(sessionUser);
                 await showAppScreen();
             } else {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                document.getElementById('screenAuth').style.display = 'flex';
-                document.getElementById('screenApp').style.display = 'none';
+                forcarTelaLogin();
             }
         } catch (error) {
             console.error(error);
-            document.getElementById('loadingOverlay').style.display = 'none';
-            document.getElementById('screenAuth').style.display = 'flex';
-            document.getElementById('screenApp').style.display = 'none';
+            forcarTelaLogin();
         }
     };
 
@@ -408,30 +443,50 @@
         else { cardL.style.display = 'none'; cardR.style.display = 'block'; }
     }
 
+    // --- CADASTRO COM TRATAMENTO DE ERROS VISÍVEL ---
     document.getElementById('formRegister').onsubmit = async function(e) {
         e.preventDefault();
         const nome = document.getElementById('regNome').value.trim();
         const cpf = document.getElementById('regCpf').value.trim().replace(/\D/g, '');
         const senha = document.getElementById('regSenha').value;
 
-        if (cpf.length !== 11) { alert("CPF inválido!"); return; }
-        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(senha)) { alert("A senha precisa conter caractere especial."); return; }
+        if (cpf.length !== 11) { showToast("CPF inválido! Digite os 11 números.", "warning"); return; }
+        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(senha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
 
         document.getElementById('loadingText').innerText = "Processando cadastro...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
+            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado. Verifique sua internet.");
+            
+            // Verifica duplicidade
             const { data: userExist } = await dbClient.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
-            if (userExist) { document.getElementById('loadingOverlay').style.display = 'none'; alert("CPF já cadastrado!"); return; }
+            if (userExist) { 
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+                showToast("Este CPF já está cadastrado no sistema!", "warning"); 
+                return; 
+            }
 
+            // Tenta inserir
             const { error } = await dbClient.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha }]);
             document.getElementById('loadingOverlay').style.display = 'none';
 
-            if (error) alert("Erro: Você criou a tabela 'usuarios' no Supabase?");
-            else { alert("Sucesso! Faça login."); this.reset(); toggleAuthCards(); }
-        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Erro: " + err.message); }
+            if (error) {
+                // Aqui mostramos exatamente por que falhou!
+                showToast("Erro do Banco: " + error.message, "error");
+                console.error("Erro Supabase:", error);
+            } else { 
+                showToast("Cadastro realizado com sucesso! Faça seu login.", "success"); 
+                this.reset(); 
+                toggleAuthCards(); 
+            }
+        } catch(err) { 
+            document.getElementById('loadingOverlay').style.display = 'none'; 
+            showToast("Erro de comunicação: " + err.message, "error"); 
+        }
     };
 
+    // --- LOGIN COM TRATAMENTO DE ERROS VISÍVEL ---
     document.getElementById('formLogin').onsubmit = async function(e) {
         e.preventDefault();
         const cpf = document.getElementById('loginCpf').value.trim().replace(/\D/g, '');
@@ -441,12 +496,29 @@
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
+            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado");
             const { data: user, error } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
-            if (error || !user) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Credenciais incorretas!"); return; }
+            
+            if (error) {
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+                showToast("Erro no banco: " + error.message, "error"); 
+                return;
+            }
+            if (!user) { 
+                document.getElementById('loadingOverlay').style.display = 'none'; 
+                showToast("CPF ou senha incorretos!", "error"); 
+                return; 
+            }
 
-            usuarioLogado = user; sessionStorage.setItem('financeProUser', JSON.stringify(user));
-            this.reset(); await showAppScreen();
-        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; alert("Erro: " + err.message); }
+            usuarioLogado = user; 
+            sessionStorage.setItem('financeProUser', JSON.stringify(user));
+            this.reset(); 
+            showToast("Login efetuado com sucesso!", "success");
+            await showAppScreen();
+        } catch(err) { 
+            document.getElementById('loadingOverlay').style.display = 'none'; 
+            showToast("Erro do sistema: " + err.message, "error"); 
+        }
     };
 
     async function showAppScreen() {
@@ -461,6 +533,7 @@
     function logout() {
         sessionStorage.removeItem('financeProUser'); usuarioLogado = null;
         document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'flex';
+        showToast("Você saiu do sistema.", "warning");
     }
 
     async function carregarDadosDaNuvem() {
@@ -517,11 +590,11 @@
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
         const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
-        cartoes.push(obj); this.reset(); atualizarTelaInteira(); await dbClient.from('cartoes').insert([obj]);
+        cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); await dbClient.from('cartoes').insert([obj]);
     };
 
     async function delCartao(id) {
-        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await dbClient.from('cartoes').delete().eq('id', id); }
+        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); showToast("Cartão excluído", "warning"); await dbClient.from('cartoes').delete().eq('id', id); }
     }
 
     function renderCartoes() {
@@ -535,20 +608,20 @@
 
     document.getElementById('formVariavel').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
-        if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
+        if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); await dbClient.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success"); await dbClient.from('lancamentos').insert([obj]);
     };
 
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
-        if (pgto.includes('Crédito') && !idCartao) { alert("Selecione um cartão."); return; }
+        if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); await dbClient.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success"); await dbClient.from('lancamentos').insert([obj]);
     };
 
     async function delLanc(id) {
-        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); await dbClient.from('lancamentos').delete().eq('id', id); }
+        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Registro excluído.", "warning"); await dbClient.from('lancamentos').delete().eq('id', id); }
     }
 
     function renderTabelasLancamentos() {
@@ -657,14 +730,9 @@
         });
     }
 
-    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); }
-    async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); }
-    function exportarParaExcel() { if(lancamentos.length === 0) return alert("Sem dados."); const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome])); const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({ 'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria, 'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'', 'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, "FinancePro_Export.xlsx"); }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); showToast("Fatura paga com sucesso!", "success"); }
+    async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); showToast("Fatura reaberta.", "warning"); }
+    function exportarParaExcel() { if(lancamentos.length === 0) { showToast("Sem dados para exportar.", "warning"); return; } const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome])); const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({ 'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria, 'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'', 'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, "FinancePro_Export.xlsx"); showToast("Planilha exportada!", "success"); }
 </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(html_content)
-print("Safe mode code updated.")}}
