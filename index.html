@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Pro - Login & Provisões na Nuvem</title>
+    <title>Finance Pro - Autenticação & Nuvem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -24,7 +24,7 @@
         .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
         
         .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: 80vh; }
-        .auth-card { background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 450px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .auth-card { background: var(--surface); padding: 32px; border-radius: 16px; border: 1px solid var(--border); width: 100%; max-width: 480px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .auth-title { font-size: 1.5rem; font-weight: 700; color: var(--primary); text-align: center; margin-bottom: 24px; }
         .auth-toggle { text-align: center; margin-top: 16px; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; }
         .auth-toggle span { color: var(--primary); font-weight: 600; text-decoration: underline; }
@@ -132,7 +132,8 @@
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Entrar no Sistema</button>
         </form>
-        <div class="auth-toggle" onclick="toggleAuthCards()">Não tem conta? <span>Cadastre-se aqui</span></div>
+        <div class="auth-toggle" onclick="mudarTelaAuth('register')">Não tem conta? <span>Cadastre-se aqui</span></div>
+        <div class="auth-toggle" onclick="mudarTelaAuth('forgot')" style="margin-top: 8px;">Esqueceu a senha? <span>Recuperar</span></div>
     </div>
 
     <div id="cardRegister" class="auth-card" style="display: none;">
@@ -142,18 +143,59 @@
                 <label>Nome Completo</label>
                 <input type="text" id="regNome" required placeholder="Seu nome completo">
             </div>
-            <div class="form-group">
-                <label>CPF</label>
-                <input type="text" id="regCpf" required placeholder="Apenas 11 números" maxlength="11">
+            <div class="grid-form" style="gap: 12px;">
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" id="regCpf" required placeholder="Apenas números" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" id="regNasc" required>
+                </div>
             </div>
             <div class="form-group">
-                <label>Senha</label>
+                <label>E-mail</label>
+                <input type="email" id="regEmail" required placeholder="seu@email.com">
+            </div>
+            <div class="form-group">
+                <label>Criar Senha</label>
                 <input type="password" id="regSenha" required placeholder="Mínimo 6 dígitos com caractere especial">
                 <small style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Deve conter pelo menos 1 caractere especial (ex: @, #, $, !).</small>
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Finalizar Cadastro</button>
         </form>
-        <div class="auth-toggle" onclick="toggleAuthCards()">Já possui uma conta? <span>Faça Login</span></div>
+        <div class="auth-toggle" onclick="mudarTelaAuth('login')">Já possui uma conta? <span>Faça Login</span></div>
+    </div>
+
+    <div id="cardForgot" class="auth-card" style="display: none;">
+        <div class="auth-title"><i class="fa-solid fa-key"></i> Recuperar Senha</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 20px;">Confirme seus dados para criar uma nova senha de acesso.</p>
+        <form id="formForgot">
+            <div class="form-group">
+                <label>Nome Completo (Exato)</label>
+                <input type="text" id="forNome" required placeholder="Como cadastrado">
+            </div>
+            <div class="form-group">
+                <label>E-mail Cadastrado</label>
+                <input type="email" id="forEmail" required placeholder="seu@email.com">
+            </div>
+            <div class="grid-form" style="gap: 12px;">
+                <div class="form-group">
+                    <label>CPF</label>
+                    <input type="text" id="forCpf" required placeholder="Apenas números" maxlength="11">
+                </div>
+                <div class="form-group">
+                    <label>Data de Nascimento</label>
+                    <input type="date" id="forNasc" required>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Nova Senha</label>
+                <input type="password" id="forNovaSenha" required placeholder="Crie uma nova senha forte">
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 12px; background-color: var(--warning); color: white;">Redefinir Senha</button>
+        </form>
+        <div class="auth-toggle" onclick="mudarTelaAuth('login')">Lembrou a senha? <span>Voltar ao Login</span></div>
     </div>
 </div>
 
@@ -323,9 +365,6 @@
     <div id="aba-faturas" class="tab-content">
         <div class="panel">
             <div class="panel-title">Controle de Faturas de Cartão (Fixos e Variáveis)</div>
-            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; margin-top:-10px;">
-                Faturas projetadas com base nos custos fixos e variáveis vinculados a cartões.
-            </p>
             <div class="table-responsive">
                 <table id="tabelaFaturas">
                     <thead><tr><th>Cartão</th><th>Competência</th><th>Vencimento</th><th>Valor Fatura</th><th>Status</th><th>Data Pgto</th><th>Ações</th></tr></thead>
@@ -362,22 +401,11 @@
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        
-        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : 
-                     type === 'error' ? '<i class="fa-solid fa-circle-exclamation"></i>' : 
-                     '<i class="fa-solid fa-circle-info"></i>';
-                     
+        const icon = type === 'success' ? '<i class="fa-solid fa-circle-check"></i>' : type === 'error' ? '<i class="fa-solid fa-circle-exclamation"></i>' : '<i class="fa-solid fa-circle-info"></i>';
         toast.innerHTML = `${icon} <span>${message}</span>`;
         container.appendChild(toast);
-        
-        // Entrada animada
         setTimeout(() => toast.classList.add('show'), 10);
-        
-        // Saída após 4 segundos
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
     // --- CONFIGURAÇÃO DO SUPABASE ---
@@ -424,7 +452,8 @@
 
             ajustarFormulario('Var'); ajustarFormulario('Fix');
 
-            const sessionUser = sessionStorage.getItem('financeProUser');
+            // Mudança para localStorage: A sessão não cai mais se você fechar a aba!
+            const sessionUser = localStorage.getItem('financeProUser');
             if (sessionUser) {
                 usuarioLogado = JSON.parse(sessionUser);
                 await showAppScreen();
@@ -437,17 +466,75 @@
         }
     };
 
-    function toggleAuthCards() {
-        const cardL = document.getElementById('cardLogin'); const cardR = document.getElementById('cardRegister');
-        if(cardL.style.display === 'none') { cardL.style.display = 'block'; cardR.style.display = 'none'; } 
-        else { cardL.style.display = 'none'; cardR.style.display = 'block'; }
+    function mudarTelaAuth(tela) {
+        document.getElementById('cardLogin').style.display = 'none';
+        document.getElementById('cardRegister').style.display = 'none';
+        document.getElementById('cardForgot').style.display = 'none';
+        
+        if (tela === 'login') document.getElementById('cardLogin').style.display = 'block';
+        if (tela === 'register') document.getElementById('cardRegister').style.display = 'block';
+        if (tela === 'forgot') document.getElementById('cardForgot').style.display = 'block';
     }
+    
+    // Antigo toggleAuthCards (mantido para compatibilidade do HTML acima)
+    function toggleAuthCards() { mudarTelaAuth('register'); }
 
-    // --- CADASTRO COM TRATAMENTO DE ERROS VISÍVEL ---
+    // --- RECUPERAÇÃO DE SENHA ---
+    document.getElementById('formForgot').onsubmit = async function(e) {
+        e.preventDefault();
+        const nome = document.getElementById('forNome').value.trim();
+        const email = document.getElementById('forEmail').value.trim();
+        const cpf = document.getElementById('forCpf').value.trim().replace(/\D/g, '');
+        const nasc = document.getElementById('forNasc').value;
+        const novaSenha = document.getElementById('forNovaSenha').value;
+
+        if (cpf.length !== 11) { showToast("CPF inválido!", "warning"); return; }
+        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(novaSenha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
+
+        document.getElementById('loadingText').innerText = "Verificando dados...";
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        try {
+            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado.");
+            
+            // Busca o usuário batendo os 4 dados exatos
+            const { data: user, error: errBusca } = await dbClient.from('usuarios')
+                .select('*')
+                .eq('cpf', cpf)
+                .eq('email', email)
+                .eq('data_nascimento', nasc)
+                .eq('nome_completo', nome)
+                .maybeSingle();
+
+            if (!user) {
+                document.getElementById('loadingOverlay').style.display = 'none';
+                showToast("Dados não conferem com nenhum cadastro ativo.", "error");
+                return;
+            }
+
+            // Atualiza a senha no banco
+            const { error: errUpdate } = await dbClient.from('usuarios').update({ senha: novaSenha }).eq('id', user.id);
+            document.getElementById('loadingOverlay').style.display = 'none';
+
+            if (errUpdate) throw errUpdate;
+
+            showToast("Senha redefinida com sucesso! Faça login.", "success");
+            this.reset();
+            mudarTelaAuth('login');
+
+        } catch (err) {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            showToast("Erro: " + err.message, "error");
+        }
+    };
+
+    // --- CADASTRO ---
     document.getElementById('formRegister').onsubmit = async function(e) {
         e.preventDefault();
         const nome = document.getElementById('regNome').value.trim();
         const cpf = document.getElementById('regCpf').value.trim().replace(/\D/g, '');
+        const email = document.getElementById('regEmail').value.trim();
+        const nasc = document.getElementById('regNasc').value;
         const senha = document.getElementById('regSenha').value;
 
         if (cpf.length !== 11) { showToast("CPF inválido! Digite os 11 números.", "warning"); return; }
@@ -457,28 +544,33 @@
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado. Verifique sua internet.");
+            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado.");
             
-            // Verifica duplicidade
             const { data: userExist } = await dbClient.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
             if (userExist) { 
                 document.getElementById('loadingOverlay').style.display = 'none'; 
-                showToast("Este CPF já está cadastrado no sistema!", "warning"); 
+                showToast("Este CPF já está cadastrado!", "warning"); 
                 return; 
             }
 
-            // Tenta inserir
-            const { error } = await dbClient.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, senha: senha }]);
+            const novoUser = { 
+                id: Date.now().toString(), 
+                nome_completo: nome, 
+                cpf: cpf, 
+                email: email, 
+                data_nascimento: nasc, 
+                senha: senha 
+            };
+
+            const { error } = await dbClient.from('usuarios').insert([novoUser]);
             document.getElementById('loadingOverlay').style.display = 'none';
 
             if (error) {
-                // Aqui mostramos exatamente por que falhou!
                 showToast("Erro do Banco: " + error.message, "error");
-                console.error("Erro Supabase:", error);
             } else { 
                 showToast("Cadastro realizado com sucesso! Faça seu login.", "success"); 
                 this.reset(); 
-                toggleAuthCards(); 
+                mudarTelaAuth('login'); 
             }
         } catch(err) { 
             document.getElementById('loadingOverlay').style.display = 'none'; 
@@ -486,7 +578,7 @@
         }
     };
 
-    // --- LOGIN COM TRATAMENTO DE ERROS VISÍVEL ---
+    // --- LOGIN ---
     document.getElementById('formLogin').onsubmit = async function(e) {
         e.preventDefault();
         const cpf = document.getElementById('loginCpf').value.trim().replace(/\D/g, '');
@@ -511,7 +603,7 @@
             }
 
             usuarioLogado = user; 
-            sessionStorage.setItem('financeProUser', JSON.stringify(user));
+            localStorage.setItem('financeProUser', JSON.stringify(user));
             this.reset(); 
             showToast("Login efetuado com sucesso!", "success");
             await showAppScreen();
@@ -531,7 +623,7 @@
     }
 
     function logout() {
-        sessionStorage.removeItem('financeProUser'); usuarioLogado = null;
+        localStorage.removeItem('financeProUser'); usuarioLogado = null;
         document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'flex';
         showToast("Você saiu do sistema.", "warning");
     }
@@ -587,14 +679,22 @@
         }
     }
 
+    // --- CARTÕES ---
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
         const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
-        cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); await dbClient.from('cartoes').insert([obj]);
+        cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); 
+        
+        const { error } = await dbClient.from('cartoes').insert([obj]);
+        if (error) showToast("Erro ao salvar na nuvem: " + error.message, "error");
     };
 
     async function delCartao(id) {
-        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); showToast("Cartão excluído", "warning"); await dbClient.from('cartoes').delete().eq('id', id); }
+        if(confirm("Excluir cartão?")) { 
+            cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); showToast("Cartão excluído", "warning"); 
+            const { error } = await dbClient.from('cartoes').delete().eq('id', id); 
+            if (error) showToast("Erro na nuvem: " + error.message, "error");
+        }
     }
 
     function renderCartoes() {
@@ -606,22 +706,32 @@
         document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
     }
 
+    // --- LANÇAMENTOS ---
     document.getElementById('formVariavel').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success"); await dbClient.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success"); 
+        
+        const { error } = await dbClient.from('lancamentos').insert([obj]);
+        if (error) showToast("Erro na nuvem: " + error.message, "error");
     };
 
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success"); await dbClient.from('lancamentos').insert([obj]);
+        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success"); 
+        
+        const { error } = await dbClient.from('lancamentos').insert([obj]);
+        if (error) showToast("Erro na nuvem: " + error.message, "error");
     };
 
     async function delLanc(id) {
-        if(confirm("Excluir?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Registro excluído.", "warning"); await dbClient.from('lancamentos').delete().eq('id', id); }
+        if(confirm("Excluir?")) { 
+            lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Registro excluído.", "warning"); 
+            await dbClient.from('lancamentos').delete().eq('id', id); 
+        }
     }
 
     function renderTabelasLancamentos() {
