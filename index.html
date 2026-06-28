@@ -128,7 +128,6 @@
 
 <!-- TELA DE AUTENTICAÇÃO -->
 <div id="screenAuth" class="auth-wrapper" style="display: none;">
-    <!-- CARD DE LOGIN -->
     <div id="cardLogin" class="auth-card">
         <div class="auth-title"><i class="fa-solid fa-lock"></i> Acessar Finance Pro</div>
         <form id="formLogin">
@@ -146,7 +145,6 @@
         <div class="auth-toggle" onclick="mudarTelaAuth('forgot')" style="margin-top: 8px;">Esqueceu a senha? <span>Recuperar</span></div>
     </div>
 
-    <!-- CARD DE CADASTRO -->
     <div id="cardRegister" class="auth-card" style="display: none;">
         <div class="auth-title"><i class="fa-solid fa-user-plus"></i> Criar Nova Conta</div>
         <form id="formRegister">
@@ -178,7 +176,6 @@
         <div class="auth-toggle" onclick="mudarTelaAuth('login')">Já possui uma conta? <span>Faça Login</span></div>
     </div>
 
-    <!-- CARD DE RECUPERAÇÃO -->
     <div id="cardForgot" class="auth-card" style="display: none;">
         <div class="auth-title"><i class="fa-solid fa-key"></i> Recuperar Senha</div>
         <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 20px;">Confirme seus dados cadastrados para redefinir sua credencial.</p>
@@ -232,7 +229,6 @@
         </div>
     </header>
 
-    <!-- RESUMO GLOBAL (TOP CARDS) -->
     <div class="summary-cards">
         <div class="card">
             <div class="card-label">Ganhos Estimados (12m)</div>
@@ -252,7 +248,6 @@
         </div>
     </div>
 
-    <!-- NAVEGAÇÃO -->
     <div class="tabs">
         <button class="tab-btn active" onclick="alterarAba('aba-comparativo', this)"><i class="fa-solid fa-scale-balanced"></i> Comparativo Mensal</button>
         <button class="tab-btn" onclick="alterarAba('aba-ganhos', this)"><i class="fa-solid fa-money-bill-trend-up"></i> Ganhos / Entradas</button>
@@ -263,7 +258,6 @@
         <button class="tab-btn" onclick="alterarAba('aba-cartoes', this)"><i class="fa-solid fa-credit-card"></i> Cartões</button>
     </div>
 
-    <!-- TELA 1: COMPARATIVO MENSAL -->
     <div id="aba-comparativo" class="tab-content active">
         <div class="panel">
             <div class="panel-title">
@@ -296,7 +290,6 @@
         </div>
     </div>
 
-    <!-- TELA 2: GANHOS / ENTRADAS -->
     <div id="aba-ganhos" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Nova Receita / Ganho</div>
@@ -354,7 +347,6 @@
         </div>
     </div>
 
-    <!-- ABA 3: CUSTO VARIÁVEL -->
     <div id="aba-variavel" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Variável</div>
@@ -411,7 +403,6 @@
         </div>
     </div>
 
-    <!-- ABA 4: CUSTO FIXO -->
     <div id="aba-fixo" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Fixo Mensal</div>
@@ -460,7 +451,6 @@
         </div>
     </div>
 
-    <!-- ABA 5: DASHBOARD CONSOLIDADO -->
     <div id="aba-dashboard" class="tab-content">
         <div class="charts-row">
             <div class="chart-box"><div class="panel-title">Evolução Mensal (Fixo vs Variável)</div><div style="height: calc(100% - 40px);"><canvas id="graficoBarras"></canvas></div></div>
@@ -477,7 +467,6 @@
         </div>
     </div>
 
-    <!-- ABA 6: FATURAS -->
     <div id="aba-faturas" class="tab-content">
         <div class="panel">
             <div class="panel-title">Controle de Faturas de Cartão (Fixos e Variáveis)</div>
@@ -491,7 +480,6 @@
         </div>
     </div>
 
-    <!-- ABA 7: CARTÕES -->
     <div id="aba-cartoes" class="tab-content">
         <div class="panel" style="max-width: 700px;">
             <div class="panel-title">Configurar Cartões</div>
@@ -656,12 +644,17 @@
         document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'flex';
     }
 
-    // --- BANCO DE DADOS ---
+    // --- BANCO DE DADOS (AGORA FILTRA POR USUÁRIO LOGADO) ---
     async function carregarDadosDaNuvem() {
+        if (!usuarioLogado) return;
         try {
-            const { data: dC } = await dbClient.from('cartoes').select('*'); if (dC) cartoes = dC;
-            const { data: dL } = await dbClient.from('lancamentos').select('*'); if (dL) lancamentos = dL;
-            const { data: dF } = await dbClient.from('faturas_pagas').select('*');
+            const { data: dC } = await dbClient.from('cartoes').select('*').eq('id_usuario', usuarioLogado.id); 
+            if (dC) cartoes = dC;
+            
+            const { data: dL } = await dbClient.from('lancamentos').select('*').eq('id_usuario', usuarioLogado.id); 
+            if (dL) lancamentos = dL;
+            
+            const { data: dF } = await dbClient.from('faturas_pagas').select('*').eq('id_usuario', usuarioLogado.id);
             if (dF) { faturasPagas = {}; dF.forEach(f => faturasPagas[f.chave] = { data: f.data }); }
         } catch (e) { console.error(e); }
         atualizarTelaInteira(); document.getElementById('loadingOverlay').style.display = 'none';
@@ -674,11 +667,11 @@
         if(aba === 'aba-comparativo') renderComparativo();
     }
 
-    // --- OPERAÇÃO DE ENTRADAS / GANHOS ---
+    // --- OPERAÇÃO DE ENTRADAS E SAÍDAS (ANEXA O ID DO USUÁRIO) ---
     document.getElementById('formGanhos').onsubmit = async function(e) {
         e.preventDefault();
         const obj = {
-            id: Date.now().toString(), tipo: 'Ganho', data: document.getElementById('dataGan').value,
+            id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Ganho', data: document.getElementById('dataGan').value,
             descricao: document.getElementById('descGan').value, categoria: document.getElementById('catGan').value,
             formaPagamento: document.getElementById('tipoGan').value, idCartao: null,
             valorParcela: parseFloat(document.getElementById('valTotalGan').value),
@@ -689,11 +682,10 @@
         if(error) showToast("Erro: " + error.message, "error");
     };
 
-    // --- OPERAÇÃO DE CUSTOS ---
     document.getElementById('formVariavel').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
-        const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
+        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
         lancamentos.push(obj); this.reset(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success");
         await dbClient.from('lancamentos').insert([obj]);
     };
@@ -701,7 +693,7 @@
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
-        const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
+        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
         lancamentos.push(obj); this.reset(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success");
         await dbClient.from('lancamentos').insert([obj]);
     };
@@ -710,15 +702,16 @@
         if(confirm("Excluir este registro?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Removido.", "warning"); await dbClient.from('lancamentos').delete().eq('id', id); }
     }
 
-    // --- CARTÕES ---
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
-        const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
+        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
         cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); await dbClient.from('cartoes').insert([obj]);
     };
+    
     async function delCartao(id) {
         if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await dbClient.from('cartoes').delete().eq('id', id); }
     }
+
     function renderCartoes() {
         const tb = document.querySelector('#tabelaCartoes tbody'); tb.innerHTML = '';
         cartoes.forEach(c => tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
@@ -727,7 +720,6 @@
         document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
     }
 
-    // --- RENDERIZADORES DE HISTÓRICO ---
     function renderTabelasLancamentos() {
         const dictC = Object.fromEntries(cartoes.map(c => [c.id, c.nome]));
         
@@ -747,7 +739,6 @@
         });
     }
 
-    // --- LÓGICA TEMPORAL & CONTAS ---
     function getMesAbsolutoBase(l) {
         const d = new Date(l.data+'T00:00:00'); const mesBase = d.getFullYear() * 12 + d.getMonth(); let shift = 0;
         if (l.formaPagamento && l.formaPagamento.includes('Crédito')) { const c = cartoes.find(x => x.id === l.idCartao); const melhorDia = c ? c.melhorDia : 31; if (d.getDate() >= melhorDia) shift = 1; }
@@ -793,7 +784,6 @@
         renderComparativo();
     }
 
-    // --- NOVO TELA: COMPARATIVO MENSAL INTERATIVO ---
     function renderComparativo() {
         const mesChave = parseInt(document.getElementById('selectMesFiltro').value); if(!mesChave) return;
         const boxGanhos = document.getElementById('comp-lista-ganhos');
@@ -830,16 +820,12 @@
         vBox.style.color = liquido >= 0 ? 'var(--success)' : 'var(--danger)';
     }
 
-    // --- DASHBOARDS & MATRIZ ---
     function renderDashboard() {
         const janela = getJanela12m();
-        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))];
-        let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
-        
+        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))]; let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
         let matrizF = {}, matrizV = {}, totalF = {}, totalV = {}, totalGeral = {}, totalGanhosMatriz = {};
         janela.forEach(m => { totalF[m.chave]=0; totalV[m.chave]=0; totalGeral[m.chave]=0; totalGanhosMatriz[m.chave]=0; });
-        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); });
-        catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
+        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); }); catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
 
         lancamentos.forEach(l => {
             const start = getMesAbsolutoBase(l);
@@ -856,8 +842,7 @@
             }
         });
 
-        const head = document.getElementById('headMatriz');
-        head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
+        const head = document.getElementById('headMatriz'); head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
         const body = document.getElementById('bodyMatriz'); body.innerHTML = '';
         
         body.innerHTML += `<tr class="row-section-header" style="background:#d1fae5;color:var(--success)"><td colspan="${janela.length+1}">--- ENTRADAS MENSAL ---</td></tr>`;
@@ -876,25 +861,14 @@
         body.innerHTML += `<tr class="row-total-table"><td>BALANÇO DE SAÍDAS (CONTAS)</td>${janela.map(m=>`<td>${formatReal(totalGeral[m.chave])}</td>`).join('')}</tr>`;
         body.innerHTML += `<tr style="background:#e0f2fe; font-weight:bold; color:var(--info)"><td>RESULTADO LÍQUIDO MÊS</td>${janela.map(m=>`<td>${formatReal(totalGanhosMatriz[m.chave] - totalGeral[m.chave])}</td>`).join('')}</tr>`;
 
-        // Gráficos
-        const labels = janela.map(m=>m.label);
-        let datasetsBarras = [];
+        const labels = janela.map(m=>m.label); let datasetsBarras = [];
         catFixo.forEach(c => datasetsBarras.push({ label: `Fixo: ${c}`, data: janela.map(m => matrizF[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-fixo)' }));
         catVar.forEach(c => datasetsBarras.push({ label: `Var: ${c}`, data: janela.map(m => matrizV[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-variavel)' }));
 
-        if(chartBar) chartBar.destroy();
-        chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), {
-            type: 'bar', data: { labels, datasets: datasetsBarras },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
-        });
+        if(chartBar) chartBar.destroy(); chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), { type: 'bar', data: { labels, datasets: datasetsBarras }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } });
 
-        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0);
-        const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
-        if(chartDoughnut) chartDoughnut.destroy();
-        chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), {
-            type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] },
-            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
-        });
+        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0); const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
+        if(chartDoughnut) chartDoughnut.destroy(); chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), { type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
     }
 
     function renderFaturas() {
@@ -918,7 +892,7 @@
         });
     }
 
-    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); showToast("Fatura paga!", "success"); }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt, id_usuario: usuarioLogado.id }]); showToast("Fatura paga!", "success"); }
     async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); showToast("Fatura reaberta.", "warning"); }
     
     function formatReal(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
