@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finance Pro - Autenticação & Nuvem</title>
+    <title>Finance Pro - Controle Total na Nuvem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,7 +15,7 @@
             --primary: #6b21a8; --primary-hover: #581c87; --primary-light: #f3e8ff;
             --bg-global: #f8fafc; --surface: #ffffff; --text-main: #0f172a; --text-muted: #64748b; --border: #e2e8f0;
             --success: #10b981; --success-light: #d1fae5; --danger: #ef4444; --danger-light: #fee2e2;
-            --warning: #f59e0b; --warning-light: #fef3c7;
+            --warning: #f59e0b; --warning-light: #fef3c7; --info: #3b82f6; --info-light: #dbeafe;
             --chart-fixo: #8b5cf6; --chart-variavel: #3b82f6;
         }
 
@@ -43,6 +43,7 @@
         .card-value { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
         .card-value.accent { color: var(--primary); }
         .card-value.danger { color: var(--danger); }
+        .card-value.success { color: var(--success); }
         .card-value.purple { color: var(--chart-fixo); }
 
         .tabs { display: flex; gap: 6px; background: #e2e8f0; padding: 6px; border-radius: 12px; align-self: flex-start; flex-wrap: wrap; }
@@ -99,7 +100,14 @@
 
         #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: 600; color: var(--primary); flex-direction: column; gap: 10px; transition: opacity 0.3s; }
 
-        /* NOTIFICAÇÕES (TOAST) MODERNAS */
+        /* COMPARATIVO */
+        .comparativo-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; }
+        @media (max-width: 768px) { .comparativo-container { grid-template-columns: 1fr; } }
+        .comp-column { background: #f8fafc; border-radius: 12px; border: 1px solid var(--border); padding: 16px; }
+        .comp-header { font-weight: 700; font-size: 0.95rem; text-transform: uppercase; margin-bottom: 12px; border-bottom: 2px solid var(--border); padding-bottom: 6px; display: flex; justify-content: space-between; }
+        .comp-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed var(--border); font-size: 0.9rem; }
+        .comp-total-box { margin-top: 15px; background: white; border: 1px solid var(--border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 1.1rem; }
+
         #toastContainer { position: fixed; bottom: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .toast { min-width: 250px; padding: 16px 20px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; color: white; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateX(50px); transition: all 0.3s ease; }
         .toast.show { opacity: 1; transform: translateX(0); }
@@ -118,17 +126,19 @@
     <button onclick="forcarTelaLogin()" class="btn btn-secondary" style="margin-top: 15px; font-size: 0.9rem;">Se travar, clique aqui para ir pro Login</button>
 </div>
 
+<!-- TELA DE AUTENTICAÇÃO -->
 <div id="screenAuth" class="auth-wrapper" style="display: none;">
+    <!-- CARD DE LOGIN -->
     <div id="cardLogin" class="auth-card">
         <div class="auth-title"><i class="fa-solid fa-lock"></i> Acessar Finance Pro</div>
         <form id="formLogin">
             <div class="form-group">
                 <label>CPF</label>
-                <input type="text" id="loginCpf" required placeholder="Apenas números" maxlength="11">
+                <input type="text" id="loginCpf" required placeholder="Digite apenas os 11 números" maxlength="11">
             </div>
             <div class="form-group">
                 <label>Senha</label>
-                <input type="password" id="loginSenha" required placeholder="Digite sua senha">
+                <input type="password" id="loginSenha" required placeholder="Digite sua senha de acesso">
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Entrar no Sistema</button>
         </form>
@@ -136,17 +146,18 @@
         <div class="auth-toggle" onclick="mudarTelaAuth('forgot')" style="margin-top: 8px;">Esqueceu a senha? <span>Recuperar</span></div>
     </div>
 
+    <!-- CARD DE CADASTRO -->
     <div id="cardRegister" class="auth-card" style="display: none;">
         <div class="auth-title"><i class="fa-solid fa-user-plus"></i> Criar Nova Conta</div>
         <form id="formRegister">
             <div class="form-group">
                 <label>Nome Completo</label>
-                <input type="text" id="regNome" required placeholder="Seu nome completo">
+                <input type="text" id="regNome" required placeholder="Ex: João Silva Sauro">
             </div>
             <div class="grid-form" style="gap: 12px;">
                 <div class="form-group">
                     <label>CPF</label>
-                    <input type="text" id="regCpf" required placeholder="Apenas números" maxlength="11">
+                    <input type="text" id="regCpf" required placeholder="Apenas 11 dígitos" maxlength="11">
                 </div>
                 <div class="form-group">
                     <label>Data de Nascimento</label>
@@ -155,11 +166,11 @@
             </div>
             <div class="form-group">
                 <label>E-mail</label>
-                <input type="email" id="regEmail" required placeholder="seu@email.com">
+                <input type="email" id="regEmail" required placeholder="exemplo@email.com">
             </div>
             <div class="form-group">
                 <label>Criar Senha</label>
-                <input type="password" id="regSenha" required placeholder="Mínimo 6 dígitos com caractere especial">
+                <input type="password" id="regSenha" required placeholder="Crie uma senha forte">
                 <small style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; display: block;">Deve conter pelo menos 1 caractere especial (ex: @, #, $, !).</small>
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 12px;">Finalizar Cadastro</button>
@@ -167,22 +178,23 @@
         <div class="auth-toggle" onclick="mudarTelaAuth('login')">Já possui uma conta? <span>Faça Login</span></div>
     </div>
 
+    <!-- CARD DE RECUPERAÇÃO -->
     <div id="cardForgot" class="auth-card" style="display: none;">
         <div class="auth-title"><i class="fa-solid fa-key"></i> Recuperar Senha</div>
-        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 20px;">Confirme seus dados para criar uma nova senha de acesso.</p>
+        <p style="font-size: 0.85rem; color: var(--text-muted); text-align: center; margin-bottom: 20px;">Confirme seus dados cadastrados para redefinir sua credencial.</p>
         <form id="formForgot">
             <div class="form-group">
                 <label>Nome Completo (Exato)</label>
-                <input type="text" id="forNome" required placeholder="Como cadastrado">
+                <input type="text" id="forNome" required placeholder="Nome igual ao cadastrado">
             </div>
             <div class="form-group">
                 <label>E-mail Cadastrado</label>
-                <input type="email" id="forEmail" required placeholder="seu@email.com">
+                <input type="email" id="forEmail" required placeholder="exemplo@email.com">
             </div>
             <div class="grid-form" style="gap: 12px;">
                 <div class="form-group">
                     <label>CPF</label>
-                    <input type="text" id="forCpf" required placeholder="Apenas números" maxlength="11">
+                    <input type="text" id="forCpf" required placeholder="Apenas os números" maxlength="11">
                 </div>
                 <div class="form-group">
                     <label>Data de Nascimento</label>
@@ -191,7 +203,7 @@
             </div>
             <div class="form-group" style="margin-top: 10px;">
                 <label>Nova Senha</label>
-                <input type="password" id="forNovaSenha" required placeholder="Crie uma nova senha forte">
+                <input type="password" id="forNovaSenha" required placeholder="Crie sua nova senha com caractere especial">
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top: 12px; background-color: var(--warning); color: white;">Redefinir Senha</button>
         </form>
@@ -199,11 +211,12 @@
     </div>
 </div>
 
+<!-- CONTEÚDO PRINCIPAL DO APLICATIVO -->
 <div id="screenApp" class="container" style="display: none;">
     <header>
         <div>
             <h1><i class="fa-solid fa-chart-pie"></i> Finance Pro</h1>
-            <p>Controle de Custos Fixos, Variáveis e Faturas na Nuvem</p>
+            <p>Controle de Ganhos, Custos Fixos, Variáveis e Comparativos Mensais</p>
         </div>
         <div style="display: flex; align-items: center; gap: 16px;">
             <div class="user-badge">
@@ -219,43 +232,140 @@
         </div>
     </header>
 
+    <!-- RESUMO GLOBAL (TOP CARDS) -->
     <div class="summary-cards">
         <div class="card">
-            <div class="card-label">Total Fixo (Próx 12m)</div>
-            <div id="sum-fixo-12m" class="card-value purple">R$ 0,00</div>
+            <div class="card-label">Ganhos Estimados (12m)</div>
+            <div id="sum-ganhos-12m" class="card-value success">R$ 0,00</div>
         </div>
         <div class="card">
-            <div class="card-label">Total Variável (Próx 12m)</div>
-            <div id="sum-variavel-12m" class="card-value" style="color: var(--chart-variavel);">R$ 0,00</div>
+            <div class="card-label">Contas Projetadas (12m)</div>
+            <div id="sum-total-12m" class="card-value danger">R$ 0,00</div>
         </div>
         <div class="card">
-            <div class="card-label">Consolidado Total (12m)</div>
-            <div id="sum-total-12m" class="card-value accent">R$ 0,00</div>
+            <div class="card-label">Saldo Acumulado (12m)</div>
+            <div id="sum-saldo-12m" class="card-value accent">R$ 0,00</div>
         </div>
         <div class="card">
-            <div class="card-label">Próximo Mês (Total)</div>
-            <div id="sum-prox-mes" class="card-value danger">R$ 0,00</div>
+            <div class="card-label">Status Próximo Mês</div>
+            <div id="sum-prox-mes-status" class="card-value">R$ 0,00</div>
         </div>
     </div>
 
+    <!-- NAVEGAÇÃO -->
     <div class="tabs">
-        <button class="tab-btn active" onclick="alterarAba('aba-variavel', this)"><i class="fa-solid fa-bag-shopping"></i> Custo Variável</button>
+        <button class="tab-btn active" onclick="alterarAba('aba-comparativo', this)"><i class="fa-solid fa-scale-balanced"></i> Comparativo Mensal</button>
+        <button class="tab-btn" onclick="alterarAba('aba-ganhos', this)"><i class="fa-solid fa-money-bill-trend-up"></i> Ganhos / Entradas</button>
+        <button class="tab-btn" onclick="alterarAba('aba-variavel', this)"><i class="fa-solid fa-bag-shopping"></i> Custo Variável</button>
         <button class="tab-btn" onclick="alterarAba('aba-fixo', this)"><i class="fa-solid fa-house-chimney"></i> Custo Fixo</button>
         <button class="tab-btn" onclick="alterarAba('aba-dashboard', this)"><i class="fa-solid fa-chart-column"></i> Dashboard Consolidado</button>
         <button class="tab-btn" onclick="alterarAba('aba-faturas', this)"><i class="fa-solid fa-receipt"></i> Faturas</button>
         <button class="tab-btn" onclick="alterarAba('aba-cartoes', this)"><i class="fa-solid fa-credit-card"></i> Cartões</button>
     </div>
 
-    <div id="aba-variavel" class="tab-content active">
+    <!-- TELA 1: COMPARATIVO MENSAL -->
+    <div id="aba-comparativo" class="tab-content active">
+        <div class="panel">
+            <div class="panel-title">
+                <span>Análise Comparativa do Mês Ativo</span>
+                <select id="selectMesFiltro" onchange="renderComparativo()" style="max-width: 180px; padding: 6px; font-size: 0.9rem;"></select>
+            </div>
+            
+            <div class="comparativo-container">
+                <div class="comp-column">
+                    <div class="comp-header" style="color: var(--success);">
+                        <span><i class="fa-solid fa-arrow-trend-up"></i> Entradas / Receitas</span>
+                        <span id="comp-total-ganhos">R$ 0,00</span>
+                    </div>
+                    <div id="comp-lista-ganhos"></div>
+                </div>
+                
+                <div class="comp-column">
+                    <div class="comp-header" style="color: var(--danger);">
+                        <span><i class="fa-solid fa-arrow-trend-down"></i> Contas a Pagar / Despesas</span>
+                        <span id="comp-total-despesas">R$ 0,00</span>
+                    </div>
+                    <div id="comp-lista-despesas"></div>
+                </div>
+            </div>
+
+            <div id="comp-total-geral-box" class="comp-total-box">
+                <span>Resultado Líquido do Mês:</span>
+                <span id="comp-resultado-valor">R$ 0,00</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 2: GANHOS / ENTRADAS -->
+    <div id="aba-ganhos" class="tab-content">
+        <div class="panel">
+            <div class="panel-title">Adicionar Nova Receita / Ganho</div>
+            <form id="formGanhos">
+                <div class="grid-form">
+                    <div class="form-group">
+                        <label>Data de Recebimento</label>
+                        <input type="date" id="dataGan" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Origem / Descrição</label>
+                        <input type="text" id="descGan" required placeholder="Ex: Salário, Freelance, Rendimentos">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria de Receita</label>
+                        <select id="catGan" required>
+                            <option value="">Selecione...</option>
+                            <option value="Salário">Salário Fixo</option>
+                            <option value="Freelance">Trabalho Autônomo / Freela</option>
+                            <option value="Investimentos">Rendimentos de Investimento</option>
+                            <option value="Presente/Prêmio">Presente ou Prêmio</option>
+                            <option value="Outros Ganhos">Outros Ganhos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Entrada</label>
+                        <select id="tipoGan" required>
+                            <option value="">Selecione...</option>
+                            <option value="Pontual">Entrada Única / À Vista</option>
+                            <option value="Recorrente">Receita Mensal Recorrente</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Valor Monetário (R$)</label>
+                        <input type="number" step="0.01" id="valTotalGan" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Meses de Recorrência</label>
+                        <input type="number" id="qtdMesesGan" value="1" min="1" required title="Para entradas mensais fixas, coloque a quantidade de meses">
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="background-color: var(--success);">Salvar Entrada Financeira</button>
+                </div>
+            </form>
+        </div>
+        <div class="panel">
+            <div class="panel-title">Histórico de Receitas Registradas</div>
+            <div class="table-responsive">
+                <table id="tabelaGanhos">
+                    <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Tipo</th><th>Valor Mensal</th><th>Meses</th><th>Total</th><th>Excluir</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABA 3: CUSTO VARIÁVEL -->
+    <div id="aba-variavel" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Variável</div>
             <form id="formVariavel">
                 <div class="grid-form">
                     <div class="form-group"><label>Data</label><input type="date" id="dataVar" required></div>
-                    <div class="form-group"><label>Descrição</label><input type="text" id="descVar" required placeholder="Ex: Terno, Restaurante"></div>
+                    <div class="form-group"><label>Descrição</label><input type="text" id="descVar" required placeholder="Ex: Jantar, Compra de roupas"></div>
                     <div class="form-group">
                         <label>Categoria</label>
                         <select id="catVar" required>
+                            <option value="">Selecione...</option>
                             <option value="Comida">Comida / Alimentação</option>
                             <option value="Transporte">Transporte</option>
                             <option value="Lazer">Lazer / Diversão</option>
@@ -269,6 +379,7 @@
                     <div class="form-group">
                         <label>Pagamento</label>
                         <select id="pgtoVar" required onchange="ajustarFormulario('Var')">
+                            <option value="">Selecione...</option>
                             <option value="Débito">Débito / PIX / Dinheiro</option>
                             <option value="Crédito à Vista">Crédito à Vista</option>
                             <option value="Crédito Parcelado">Crédito Parcelado</option>
@@ -282,9 +393,9 @@
                             <label><input type="radio" name="modoCalcVar" value="parcela" onchange="calcularDinâmico('Var')"> Informar Parcela</label>
                         </div>
                     </div>
-                    <div class="form-group"><label>Total (R$)</label><input type="number" step="0.01" id="valTotalVar" required oninput="calcularDinâmico('Var')"></div>
+                    <div class="form-group"><label>Total (R$)</label><input type="number" step="0.01" id="valTotalVar" required placeholder="0.00" oninput="calcularDinâmico('Var')"></div>
                     <div class="form-group"><label>Qtd Parcelas</label><input type="number" id="qtdParcVar" value="1" min="1" required oninput="calcularDinâmico('Var')"></div>
-                    <div class="form-group"><label>Parcela (R$)</label><input type="number" step="0.01" id="valParcVar" readonly></div>
+                    <div class="form-group"><label>Parcela (R$)</label><input type="number" step="0.01" id="valParcVar" readonly placeholder="0.00"></div>
                 </div>
                 <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary">Salvar Custo Variável</button></div>
             </form>
@@ -300,23 +411,25 @@
         </div>
     </div>
 
+    <!-- ABA 4: CUSTO FIXO -->
     <div id="aba-fixo" class="tab-content">
         <div class="panel">
             <div class="panel-title">Adicionar Custo Fixo Mensal</div>
             <form id="formFixo">
                 <div class="grid-form">
                     <div class="form-group"><label>Data de Início</label><input type="date" id="dataFix" required></div>
-                    <div class="form-group"><label>Descrição</label><input type="text" id="descFix" required placeholder="Ex: Conta de Luz, Aluguel"></div>
+                    <div class="form-group"><label>Descrição</label><input type="text" id="descFix" required placeholder="Ex: Aluguel, Plano de Internet"></div>
                     <div class="form-group">
                         <label>Categoria</label>
                         <select id="catFix" required>
+                            <option value="">Selecione...</option>
                             <option value="Água">Água</option>
                             <option value="Luz">Luz / Energia</option>
                             <option value="Internet">Internet / Telefone</option>
                             <option value="Imposto">Imposto (IPTU, IPVA)</option>
                             <option value="Casa">Casa / Aluguel / Condomínio</option>
-                            <option value="Assinaturas">Assinaturas (Spotify, IPTV, Netflix)</option>
-                            <option value="Compra do Mês">Compra do Mês (Mercado Fixo)</option>
+                            <option value="Assinaturas">Assinaturas (Spotify, Netflix)</option>
+                            <option value="Compra do Mês">Compra do Mês (Mercado)</option>
                             <option value="Academia">Academia (Mensalidade)</option>
                             <option value="Outros Fixos">Outros Fixos</option>
                         </select>
@@ -324,6 +437,7 @@
                     <div class="form-group">
                         <label>Forma Pagamento</label>
                         <select id="pgtoFix" required onchange="ajustarFormulario('Fix')">
+                            <option value="">Selecione...</option>
                             <option value="Débito">Boleto / PIX / Débito Conta</option>
                             <option value="Crédito Fixo">Cartão de Crédito (Recorrente)</option>
                         </select>
@@ -346,6 +460,7 @@
         </div>
     </div>
 
+    <!-- ABA 5: DASHBOARD CONSOLIDADO -->
     <div id="aba-dashboard" class="tab-content">
         <div class="charts-row">
             <div class="chart-box"><div class="panel-title">Evolução Mensal (Fixo vs Variável)</div><div style="height: calc(100% - 40px);"><canvas id="graficoBarras"></canvas></div></div>
@@ -362,9 +477,11 @@
         </div>
     </div>
 
+    <!-- ABA 6: FATURAS -->
     <div id="aba-faturas" class="tab-content">
         <div class="panel">
             <div class="panel-title">Controle de Faturas de Cartão (Fixos e Variáveis)</div>
+            <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px; margin-top:-10px;">Faturas projetadas com base nos custos fixos e variáveis vinculados a cartões.</p>
             <div class="table-responsive">
                 <table id="tabelaFaturas">
                     <thead><tr><th>Cartão</th><th>Competência</th><th>Vencimento</th><th>Valor Fatura</th><th>Status</th><th>Data Pgto</th><th>Ações</th></tr></thead>
@@ -374,14 +491,15 @@
         </div>
     </div>
 
+    <!-- ABA 7: CARTÕES -->
     <div id="aba-cartoes" class="tab-content">
         <div class="panel" style="max-width: 700px;">
             <div class="panel-title">Configurar Cartões</div>
             <form id="formCartao">
                 <div class="grid-form" style="grid-template-columns: 2fr 1fr 1fr;">
-                    <div class="form-group"><label>Nome do Cartão</label><input type="text" id="nomeCartao" required></div>
-                    <div class="form-group"><label>Melhor Dia</label><input type="number" id="melhorDia" required min="1" max="31"></div>
-                    <div class="form-group"><label>Vencimento</label><input type="number" id="diaVenc" required min="1" max="31"></div>
+                    <div class="form-group"><label>Nome do Cartão</label><input type="text" id="nomeCartao" required placeholder="Ex: Inter Black"></div>
+                    <div class="form-group"><label>Melhor Dia</label><input type="number" id="melhorDia" required min="1" max="31" placeholder="Ex: 4"></div>
+                    <div class="form-group"><label>Vencimento</label><input type="number" id="diaVenc" required min="1" max="31" placeholder="Ex: 14"></div>
                 </div>
                 <div style="margin-top: 20px;"><button type="submit" class="btn btn-primary">Cadastrar Cartão</button></div>
             </form>
@@ -396,7 +514,6 @@
 </div>
 
 <script>
-    // --- SISTEMA DE NOTIFICAÇÕES (TOAST) ---
     function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
         const toast = document.createElement('div');
@@ -408,7 +525,6 @@
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    // --- CONFIGURAÇÃO DO SUPABASE ---
     const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
     
@@ -421,10 +537,9 @@
     const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
     const coresDistintasGrafico = {
         'Água': '#3b82f6', 'Luz': '#f59e0b', 'Internet': '#8b5cf6', 'Imposto': '#ef4444', 
-        'Casa': '#14b8a6', 'Assinaturas': '#ec4899', 'Compra do Mês': '#06b6d4',
-        'Academia': '#f43f5e', 'Comida': '#84cc16', 'Transporte': '#eab308', 
-        'Lazer': '#6366f1', 'Roupa': '#d946ef', 'Presente': '#f97316', 
-        'Educação': '#0ea5e9', 'Saúde': '#10b981', 'Outros Fixos': '#64748b', 'Outros Variáveis': '#94a3b8'
+        'Casa': '#14b8a6', 'Assinaturas': '#ec4899', 'Compra do Mês': '#06b6d4', 'Academia': '#f43f5e', 
+        'Comida': '#84cc16', 'Transporte': '#eab308', 'Lazer': '#6366f1', 'Roupa': '#d946ef', 
+        'Presente': '#f97316', 'Educação': '#0ea5e9', 'Saúde': '#10b981', 'Outros Fixos': '#64748b', 'Outros Variáveis': '#94a3b8'
     };
 
     function forcarTelaLogin() {
@@ -436,23 +551,16 @@
     window.onload = async function() {
         setTimeout(() => {
             const loader = document.getElementById('loadingOverlay');
-            if(loader && loader.style.display !== 'none' && !usuarioLogado) {
-                forcarTelaLogin();
-            }
+            if(loader && loader.style.display !== 'none' && !usuarioLogado) { forcarTelaLogin(); }
         }, 3000);
-
-        if (document.getElementById('dataVar')) document.getElementById('dataVar').valueAsDate = new Date();
-        if (document.getElementById('dataFix')) document.getElementById('dataFix').valueAsDate = new Date();
         
         try {
             if (window.supabase) {
                 dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 bancoNuvemAtivo = true;
             }
-
             ajustarFormulario('Var'); ajustarFormulario('Fix');
 
-            // Mudança para localStorage: A sessão não cai mais se você fechar a aba!
             const sessionUser = localStorage.getItem('financeProUser');
             if (sessionUser) {
                 usuarioLogado = JSON.parse(sessionUser);
@@ -460,75 +568,20 @@
             } else {
                 forcarTelaLogin();
             }
-        } catch (error) {
-            console.error(error);
-            forcarTelaLogin();
-        }
+        } catch (error) { console.error(error); forcarTelaLogin(); }
     };
 
     function mudarTelaAuth(tela) {
         document.getElementById('cardLogin').style.display = 'none';
         document.getElementById('cardRegister').style.display = 'none';
         document.getElementById('cardForgot').style.display = 'none';
-        
         if (tela === 'login') document.getElementById('cardLogin').style.display = 'block';
         if (tela === 'register') document.getElementById('cardRegister').style.display = 'block';
         if (tela === 'forgot') document.getElementById('cardForgot').style.display = 'block';
     }
-    
-    // Antigo toggleAuthCards (mantido para compatibilidade do HTML acima)
     function toggleAuthCards() { mudarTelaAuth('register'); }
 
-    // --- RECUPERAÇÃO DE SENHA ---
-    document.getElementById('formForgot').onsubmit = async function(e) {
-        e.preventDefault();
-        const nome = document.getElementById('forNome').value.trim();
-        const email = document.getElementById('forEmail').value.trim();
-        const cpf = document.getElementById('forCpf').value.trim().replace(/\D/g, '');
-        const nasc = document.getElementById('forNasc').value;
-        const novaSenha = document.getElementById('forNovaSenha').value;
-
-        if (cpf.length !== 11) { showToast("CPF inválido!", "warning"); return; }
-        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(novaSenha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
-
-        document.getElementById('loadingText').innerText = "Verificando dados...";
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
-        try {
-            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado.");
-            
-            // Busca o usuário batendo os 4 dados exatos
-            const { data: user, error: errBusca } = await dbClient.from('usuarios')
-                .select('*')
-                .eq('cpf', cpf)
-                .eq('email', email)
-                .eq('data_nascimento', nasc)
-                .eq('nome_completo', nome)
-                .maybeSingle();
-
-            if (!user) {
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showToast("Dados não conferem com nenhum cadastro ativo.", "error");
-                return;
-            }
-
-            // Atualiza a senha no banco
-            const { error: errUpdate } = await dbClient.from('usuarios').update({ senha: novaSenha }).eq('id', user.id);
-            document.getElementById('loadingOverlay').style.display = 'none';
-
-            if (errUpdate) throw errUpdate;
-
-            showToast("Senha redefinida com sucesso! Faça login.", "success");
-            this.reset();
-            mudarTelaAuth('login');
-
-        } catch (err) {
-            document.getElementById('loadingOverlay').style.display = 'none';
-            showToast("Erro: " + err.message, "error");
-        }
-    };
-
-    // --- CADASTRO ---
+    // --- CADASTRO & LOGIN ---
     document.getElementById('formRegister').onsubmit = async function(e) {
         e.preventDefault();
         const nome = document.getElementById('regNome').value.trim();
@@ -537,97 +590,73 @@
         const nasc = document.getElementById('regNasc').value;
         const senha = document.getElementById('regSenha').value;
 
-        if (cpf.length !== 11) { showToast("CPF inválido! Digite os 11 números.", "warning"); return; }
+        if (cpf.length !== 11) { showToast("CPF inválido!", "warning"); return; }
         if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(senha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
 
         document.getElementById('loadingText').innerText = "Processando cadastro...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado.");
-            
             const { data: userExist } = await dbClient.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
-            if (userExist) { 
-                document.getElementById('loadingOverlay').style.display = 'none'; 
-                showToast("Este CPF já está cadastrado!", "warning"); 
-                return; 
-            }
+            if (userExist) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("CPF já cadastrado!", "warning"); return; }
 
-            const novoUser = { 
-                id: Date.now().toString(), 
-                nome_completo: nome, 
-                cpf: cpf, 
-                email: email, 
-                data_nascimento: nasc, 
-                senha: senha 
-            };
-
-            const { error } = await dbClient.from('usuarios').insert([novoUser]);
+            const { error } = await dbClient.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, email: email, data_nascimento: nasc, senha: senha }]);
             document.getElementById('loadingOverlay').style.display = 'none';
 
-            if (error) {
-                showToast("Erro do Banco: " + error.message, "error");
-            } else { 
-                showToast("Cadastro realizado com sucesso! Faça seu login.", "success"); 
-                this.reset(); 
-                mudarTelaAuth('login'); 
-            }
-        } catch(err) { 
-            document.getElementById('loadingOverlay').style.display = 'none'; 
-            showToast("Erro de comunicação: " + err.message, "error"); 
-        }
+            if (error) showToast("Erro do Banco: " + error.message, "error");
+            else { showToast("Cadastro realizado com sucesso!", "success"); this.reset(); mudarTelaAuth('login'); }
+        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
     };
 
-    // --- LOGIN ---
     document.getElementById('formLogin').onsubmit = async function(e) {
         e.preventDefault();
         const cpf = document.getElementById('loginCpf').value.trim().replace(/\D/g, '');
         const senha = document.getElementById('loginSenha').value;
-
         document.getElementById('loadingText').innerText = "Autenticando...";
         document.getElementById('loadingOverlay').style.display = 'flex';
 
         try {
-            if (!bancoNuvemAtivo) throw new Error("Supabase não carregado");
             const { data: user, error } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
-            
-            if (error) {
-                document.getElementById('loadingOverlay').style.display = 'none'; 
-                showToast("Erro no banco: " + error.message, "error"); 
-                return;
-            }
-            if (!user) { 
-                document.getElementById('loadingOverlay').style.display = 'none'; 
-                showToast("CPF ou senha incorretos!", "error"); 
-                return; 
-            }
+            if (error || !user) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Credenciais incorretas!", "error"); return; }
+            usuarioLogado = user; localStorage.setItem('financeProUser', JSON.stringify(user));
+            this.reset(); showToast("Bem-vindo!", "success"); await showAppScreen();
+        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
+    };
 
-            usuarioLogado = user; 
-            localStorage.setItem('financeProUser', JSON.stringify(user));
-            this.reset(); 
-            showToast("Login efetuado com sucesso!", "success");
-            await showAppScreen();
-        } catch(err) { 
-            document.getElementById('loadingOverlay').style.display = 'none'; 
-            showToast("Erro do sistema: " + err.message, "error"); 
-        }
+    document.getElementById('formForgot').onsubmit = async function(e) {
+        e.preventDefault();
+        const nome = document.getElementById('forNome').value.trim();
+        const email = document.getElementById('forEmail').value.trim();
+        const cpf = document.getElementById('forCpf').value.trim().replace(/\D/g, '');
+        const nasc = document.getElementById('forNasc').value;
+        const novaSenha = document.getElementById('forNovaSenha').value;
+
+        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(novaSenha)) { showToast("A nova senha precisa conter caractere especial.", "warning"); return; }
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        try {
+            const { data: user } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('email', email).eq('data_nascimento', nasc).eq('nome_completo', nome).maybeSingle();
+            if (!user) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Dados incorretos!", "error"); return; }
+            await dbClient.from('usuarios').update({ senha: novaSenha }).eq('id', user.id);
+            document.getElementById('loadingOverlay').style.display = 'none';
+            showToast("Senha redefinida!", "success"); mudarTelaAuth('login');
+        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
     };
 
     async function showAppScreen() {
-        document.getElementById('loadingText').innerText = "Carregando dados...";
-        document.getElementById('loadingOverlay').style.display = 'flex';
         document.getElementById('userNameDisplay').innerText = usuarioLogado.nome_completo;
         document.getElementById('screenAuth').style.display = 'none';
         document.getElementById('screenApp').style.display = 'block';
         await carregarDadosDaNuvem();
+        construirFiltroMeses();
     }
 
     function logout() {
         localStorage.removeItem('financeProUser'); usuarioLogado = null;
         document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'flex';
-        showToast("Você saiu do sistema.", "warning");
     }
 
+    // --- BANCO DE DADOS ---
     async function carregarDadosDaNuvem() {
         try {
             const { data: dC } = await dbClient.from('cartoes').select('*'); if (dC) cartoes = dC;
@@ -642,155 +671,198 @@
         atualizarSelectsCartoes(); renderCartoes(); renderTabelasLancamentos(); calcularTopCards();
         const aba = document.querySelector('.tab-content.active').id;
         if(aba === 'aba-dashboard') renderDashboard(); if(aba === 'aba-faturas') renderFaturas();
+        if(aba === 'aba-comparativo') renderComparativo();
     }
 
-    function formatReal(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
-    function Skinner(v) { return parseFloat(v) || 0; }
-
-    function alterarAba(id, btn) {
-        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(id).style.display = 'block'; btn.classList.add('active');
-        if(id === 'aba-dashboard') renderDashboard(); if(id === 'aba-faturas') renderFaturas();
-        if(id === 'aba-variavel' || id === 'aba-fixo') renderTabelasLancamentos();
-    }
-
-    function calcularDinâmico(tipo) {
-        if(tipo === 'Var') {
-            const modo = document.querySelector('input[name="modoCalcVar"]:checked').value;
-            const qtd = parseInt(document.getElementById('qtdParcVar').value) || 1;
-            const inTot = document.getElementById('valTotalVar'); const inParc = document.getElementById('valParcVar');
-            if (modo === 'total') { inTot.readOnly = false; inParc.readOnly = true; inParc.value = (Skinner(inTot.value) / qtd).toFixed(2); } 
-            else { inParc.readOnly = false; inTot.readOnly = true; inTot.value = (Skinner(inParc.value) * qtd).toFixed(2); }
-        }
-    }
-
-    function ajustarFormulario(tipo) {
-        const pgto = document.getElementById(`pgto${tipo}`).value;
-        const contCartao = document.getElementById(`containerCartao${tipo}`);
-        const selCartao = document.getElementById(`cartao${tipo}`);
-        if (pgto.includes('Crédito')) { contCartao.style.display = 'flex'; selCartao.required = true; } 
-        else { contCartao.style.display = 'none'; selCartao.required = false; selCartao.value = ''; }
-        if(tipo === 'Var') {
-            const qtd = document.getElementById('qtdParcVar');
-            if (pgto === 'Crédito Parcelado') { qtd.disabled = false; if(qtd.value < 2) qtd.value = 2; } 
-            else { qtd.disabled = true; qtd.value = 1; }
-            calcularDinâmico('Var');
-        }
-    }
-
-    // --- CARTÕES ---
-    document.getElementById('formCartao').onsubmit = async function(e) {
+    // --- OPERAÇÃO DE ENTRADAS / GANHOS ---
+    document.getElementById('formGanhos').onsubmit = async function(e) {
         e.preventDefault();
-        const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
-        cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); 
-        
-        const { error } = await dbClient.from('cartoes').insert([obj]);
-        if (error) showToast("Erro ao salvar na nuvem: " + error.message, "error");
+        const obj = {
+            id: Date.now().toString(), tipo: 'Ganho', data: document.getElementById('dataGan').value,
+            descricao: document.getElementById('descGan').value, categoria: document.getElementById('catGan').value,
+            formaPagamento: document.getElementById('tipoGan').value, idCartao: null,
+            valorParcela: parseFloat(document.getElementById('valTotalGan').value),
+            qtdParcelas: parseInt(document.getElementById('qtdMesesGan').value)
+        };
+        lancamentos.push(obj); this.reset(); atualizarTelaInteira(); showToast("Receita adicionada!", "success");
+        const { error } = await dbClient.from('lancamentos').insert([obj]);
+        if(error) showToast("Erro: " + error.message, "error");
     };
 
-    async function delCartao(id) {
-        if(confirm("Excluir cartão?")) { 
-            cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); showToast("Cartão excluído", "warning"); 
-            const { error } = await dbClient.from('cartoes').delete().eq('id', id); 
-            if (error) showToast("Erro na nuvem: " + error.message, "error");
-        }
-    }
-
-    function renderCartoes() {
-        const tb = document.querySelector('#tabelaCartoes tbody'); tb.innerHTML = '';
-        cartoes.forEach(c => tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
-    }
-
-    function atualizarSelectsCartoes() {
-        document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
-    }
-
-    // --- LANÇAMENTOS ---
+    // --- OPERAÇÃO DE CUSTOS ---
     document.getElementById('formVariavel').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataVar').valueAsDate = new Date(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success"); 
-        
-        const { error } = await dbClient.from('lancamentos').insert([obj]);
-        if (error) showToast("Erro na nuvem: " + error.message, "error");
+        lancamentos.push(obj); this.reset(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success");
+        await dbClient.from('lancamentos').insert([obj]);
     };
 
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
         const obj = { id: Date.now().toString(), tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
-        lancamentos.push(obj); this.reset(); document.getElementById('dataFix').valueAsDate = new Date(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success"); 
-        
-        const { error } = await dbClient.from('lancamentos').insert([obj]);
-        if (error) showToast("Erro na nuvem: " + error.message, "error");
+        lancamentos.push(obj); this.reset(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success");
+        await dbClient.from('lancamentos').insert([obj]);
     };
 
     async function delLanc(id) {
-        if(confirm("Excluir?")) { 
-            lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Registro excluído.", "warning"); 
-            await dbClient.from('lancamentos').delete().eq('id', id); 
-        }
+        if(confirm("Excluir este registro?")) { lancamentos = lancamentos.filter(l => l.id !== id); atualizarTelaInteira(); showToast("Removido.", "warning"); await dbClient.from('lancamentos').delete().eq('id', id); }
     }
 
+    // --- CARTÕES ---
+    document.getElementById('formCartao').onsubmit = async function(e) {
+        e.preventDefault();
+        const obj = { id: Date.now().toString(), nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
+        cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); await dbClient.from('cartoes').insert([obj]);
+    };
+    async function delCartao(id) {
+        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await dbClient.from('cartoes').delete().eq('id', id); }
+    }
+    function renderCartoes() {
+        const tb = document.querySelector('#tabelaCartoes tbody'); tb.innerHTML = '';
+        cartoes.forEach(c => tb.innerHTML += `<tr><td>${c.nome}</td><td>${c.melhorDia}</td><td>${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+    }
+    function atualizarSelectsCartoes() {
+        document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione...</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
+    }
+
+    // --- RENDERIZADORES DE HISTÓRICO ---
     function renderTabelasLancamentos() {
         const dictC = Object.fromEntries(cartoes.map(c => [c.id, c.nome]));
+        
+        const tbGan = document.querySelector('#tabelaGanhos tbody'); tbGan.innerHTML = '';
+        lancamentos.filter(l => l.tipo === 'Ganho').reverse().forEach(l => {
+            tbGan.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color:var(--success)">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${formatReal(l.valorParcela)}</td><td>${l.qtdParcelas}m</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+        });
+
         const tbVar = document.querySelector('#tabelaVar tbody'); tbVar.innerHTML = '';
-        lancamentos.filter(l => l.tipo === 'Variavel').reverse().forEach(l => tbVar.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--primary)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)}</td><td>${l.qtdParcelas}x</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+        lancamentos.filter(l => l.tipo === 'Variavel').reverse().forEach(l => {
+            tbVar.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--primary)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)}</td><td>${l.qtdParcelas}x</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+        });
+
         const tbFix = document.querySelector('#tabelaFix tbody'); tbFix.innerHTML = '';
-        lancamentos.filter(l => l.tipo === 'Fixo').reverse().forEach(l => tbFix.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--chart-fixo)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)} /mês</td><td>${l.qtdParcelas} meses</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+        lancamentos.filter(l => l.tipo === 'Fixo').reverse().forEach(l => {
+            tbFix.innerHTML += `<tr><td>${new Date(l.data+'T00:00:00').toLocaleDateString('pt-BR')}</td><td>${l.descricao}</td><td><span class="badge" style="background-color: ${coresDistintasGrafico[l.categoria] || 'var(--chart-fixo)'}">${l.categoria}</span></td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'-'}</td><td>${formatReal(l.valorParcela)} /mês</td><td>${l.qtdParcelas} meses</td><td><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`;
+        });
     }
 
+    // --- LÓGICA TEMPORAL & CONTAS ---
     function getMesAbsolutoBase(l) {
         const d = new Date(l.data+'T00:00:00'); const mesBase = d.getFullYear() * 12 + d.getMonth(); let shift = 0;
-        if (l.formaPagamento.includes('Crédito')) { const c = cartoes.find(x => x.id === l.idCartao); const melhorDia = c ? c.melhorDia : 31; if (d.getDate() >= melhorDia) shift = 1; }
+        if (l.formaPagamento && l.formaPagamento.includes('Crédito')) { const c = cartoes.find(x => x.id === l.idCartao); const melhorDia = c ? c.melhorDia : 31; if (d.getDate() >= melhorDia) shift = 1; }
         return mesBase + shift;
     }
 
     function getJanela12m() {
         let arr = []; const hoje = new Date();
-        for(let i=0; i<12; i++) { let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1); arr.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, obj: d }); }
+        for(let i=0; i<12; i++) { let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1); arr.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}` }); }
         return arr;
     }
 
     function calcularTopCards() {
-        const janela = getJanela12m(); let sumF = 0, sumV = 0, proxMes = 0;
+        const janela = getJanela12m(); let sumG = 0, sumD = 0, proxMesGanho = 0, proxMesDespesa = 0;
         lancamentos.forEach(l => {
             const start = getMesAbsolutoBase(l);
             for(let i=0; i<l.qtdParcelas; i++) {
-                let mesParcela = start + i;
-                if(janela.find(m => m.chave === mesParcela)) {
-                    if(l.tipo === 'Fixo') sumF += l.valorParcela; if(l.tipo === 'Variavel') sumV += l.valorParcela;
-                    if(mesParcela === janela[0].chave) proxMes += l.valorParcela;
+                let mParc = start + i;
+                if(janela.find(m => m.chave === mParc)) {
+                    if(l.tipo === 'Ganho') { sumG += l.valorParcela; if(mParc === janela[0].chave) proxMesGanho += l.valorParcela; } 
+                    else { sumD += l.valorParcela; if(mParc === janela[0].chave) proxMesDespesa += l.valorParcela; }
                 }
             }
         });
-        document.getElementById('sum-fixo-12m').innerText = formatReal(sumF); document.getElementById('sum-variavel-12m').innerText = formatReal(sumV); document.getElementById('sum-total-12m').innerText = formatReal(sumF + sumV); document.getElementById('sum-prox-mes').innerText = formatReal(proxMes);
+        document.getElementById('sum-ganhos-12m').innerText = formatReal(sumG);
+        document.getElementById('sum-total-12m').innerText = formatReal(sumD);
+        
+        const saldoAcumulado = sumG - sumD;
+        const cardSaldo = document.getElementById('sum-saldo-12m');
+        cardSaldo.innerText = formatReal(saldoAcumulado);
+        cardSaldo.className = `card-value ${saldoAcumulado >= 0 ? 'success' : 'danger'}`;
+
+        const proxSaldo = proxMesGanho - proxMesDespesa;
+        const cardProx = document.getElementById('sum-prox-mes-status');
+        cardProx.innerText = `${proxSaldo >= 0 ? 'POSITIVO' : 'NEGATIVO'} (${formatReal(proxSaldo)})`;
+        cardProx.className = `card-value ${proxSaldo >= 0 ? 'success' : 'danger'}`;
     }
 
+    function construirFiltroMeses() {
+        const select = document.getElementById('selectMesFiltro'); if(!select) return;
+        const janela = getJanela12m();
+        select.innerHTML = janela.map(m => `<option value="${m.chave}">${m.label}</option>`).join('');
+        renderComparativo();
+    }
+
+    // --- NOVO TELA: COMPARATIVO MENSAL INTERATIVO ---
+    function renderComparativo() {
+        const mesChave = parseInt(document.getElementById('selectMesFiltro').value); if(!mesChave) return;
+        const boxGanhos = document.getElementById('comp-lista-ganhos');
+        const boxDespesas = document.getElementById('comp-lista-despesas');
+        
+        boxGanhos.innerHTML = ''; boxDespesas.innerHTML = '';
+        let totG = 0, totD = 0;
+
+        lancamentos.forEach(l => {
+            const start = getMesAbsolutoBase(l);
+            for(let i=0; i<l.qtdParcelas; i++) {
+                if((start + i) === mesChave) {
+                    if(l.tipo === 'Ganho') {
+                        totG += l.valorParcela;
+                        boxGanhos.innerHTML += `<div class="comp-item"><span>${l.descricao}</span><b style="color:var(--success)">+ ${formatReal(l.valorParcela)}</b></div>`;
+                    } else {
+                        totD += l.valorParcela;
+                        let prefix = l.tipo === 'Fixo' ? 'Fixo: ' : '';
+                        boxDespesas.innerHTML += `<div class="comp-item"><span>${prefix}${l.descricao}</span><b style="color:var(--danger)">- ${formatReal(l.valorParcela)}</b></div>`;
+                    }
+                }
+            }
+        });
+
+        if(totG === 0) boxGanhos.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhuma receita para este mês.</p>';
+        if(totD === 0) boxDespesas.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:20px;">Nenhuma conta para este mês.</p>';
+
+        document.getElementById('comp-total-ganhos').innerText = formatReal(totG);
+        document.getElementById('comp-total-despesas').innerText = formatReal(totD);
+        
+        const liquido = totG - totD;
+        const vBox = document.getElementById('comp-resultado-valor');
+        vBox.innerText = `${liquido >= 0 ? 'POSITIVO' : 'NEGATIVO'} (${formatReal(liquido)})`;
+        vBox.style.color = liquido >= 0 ? 'var(--success)' : 'var(--danger)';
+    }
+
+    // --- DASHBOARDS & MATRIZ ---
     function renderDashboard() {
         const janela = getJanela12m();
-        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))]; let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
-        let matrizF = {}, matrizV = {}, totalF = {}, totalV = {}, totalGeral = {};
-        janela.forEach(m => { totalF[m.chave]=0; totalV[m.chave]=0; totalGeral[m.chave]=0; });
-        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); }); catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
+        let catFixo = [...new Set(lancamentos.filter(l=>l.tipo==='Fixo').map(l=>l.categoria))];
+        let catVar = [...new Set(lancamentos.filter(l=>l.tipo==='Variavel').map(l=>l.categoria))];
+        
+        let matrizF = {}, matrizV = {}, totalF = {}, totalV = {}, totalGeral = {}, totalGanhosMatriz = {};
+        janela.forEach(m => { totalF[m.chave]=0; totalV[m.chave]=0; totalGeral[m.chave]=0; totalGanhosMatriz[m.chave]=0; });
+        catFixo.forEach(c => { matrizF[c]={}; janela.forEach(m => matrizF[c][m.chave]=0); });
+        catVar.forEach(c => { matrizV[c]={}; janela.forEach(m => matrizV[c][m.chave]=0); });
 
         lancamentos.forEach(l => {
             const start = getMesAbsolutoBase(l);
             for(let i=0; i<l.qtdParcelas; i++) {
                 let mes = start + i;
                 if(totalGeral[mes] !== undefined) {
-                    totalGeral[mes] += l.valorParcela;
-                    if(l.tipo === 'Fixo') { matrizF[l.categoria][mes] += l.valorParcela; totalF[mes] += l.valorParcela; } 
-                    else { matrizV[l.categoria][mes] += l.valorParcela; totalV[mes] += l.valorParcela; }
+                    if(l.tipo === 'Ganho') { totalGanhosMatriz[mes] += l.valorParcela; }
+                    else {
+                        totalGeral[mes] += l.valorParcela;
+                        if(l.tipo === 'Fixo') { matrizF[l.categoria][mes] += l.valorParcela; totalF[mes] += l.valorParcela; } 
+                        else { matrizV[l.categoria][mes] += l.valorParcela; totalV[mes] += l.valorParcela; }
+                    }
                 }
             }
         });
 
-        const head = document.getElementById('headMatriz'); head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
+        const head = document.getElementById('headMatriz');
+        head.innerHTML = `<tr><th>Setor / Segmento</th>${janela.map(m=>`<th>${m.label}</th>`).join('')}</tr>`;
         const body = document.getElementById('bodyMatriz'); body.innerHTML = '';
         
+        body.innerHTML += `<tr class="row-section-header" style="background:#d1fae5;color:var(--success)"><td colspan="${janela.length+1}">--- ENTRADAS MENSAL ---</td></tr>`;
+        body.innerHTML += `<tr style="font-weight:700"><td>Total Receitas (Ganhos)</td>${janela.map(m=>`<td>${formatReal(totalGanhosMatriz[m.chave])}</td>`).join('')}</tr>`;
+
         if(catFixo.length > 0) {
             body.innerHTML += `<tr class="row-section-header"><td colspan="${janela.length+1}">--- CUSTOS FIXOS ---</td></tr>`;
             catFixo.forEach(c => body.innerHTML += `<tr><td><span class="badge" style="background-color: ${coresDistintasGrafico[c]||'var(--chart-fixo)'}">${c}</span></td>${janela.map(m=>`<td>${formatReal(matrizF[c][m.chave])}</td>`).join('')}</tr>`);
@@ -801,47 +873,81 @@
             catVar.forEach(c => body.innerHTML += `<tr><td><span class="badge" style="background-color: ${coresDistintasGrafico[c]||'var(--chart-variavel)'}">${c}</span></td>${janela.map(m=>`<td>${formatReal(matrizV[c][m.chave])}</td>`).join('')}</tr>`);
             body.innerHTML += `<tr class="row-subtotal"><td>Subtotal Variável</td>${janela.map(m=>`<td>${formatReal(totalV[m.chave])}</td>`).join('')}</tr>`;
         }
-        body.innerHTML += `<tr class="row-total-table"><td>CONSOLIDADO TOTAL</td>${janela.map(m=>`<td>${formatReal(totalGeral[m.chave])}</td>`).join('')}</tr>`;
+        body.innerHTML += `<tr class="row-total-table"><td>BALANÇO DE SAÍDAS (CONTAS)</td>${janela.map(m=>`<td>${formatReal(totalGeral[m.chave])}</td>`).join('')}</tr>`;
+        body.innerHTML += `<tr style="background:#e0f2fe; font-weight:bold; color:var(--info)"><td>RESULTADO LÍQUIDO MÊS</td>${janela.map(m=>`<td>${formatReal(totalGanhosMatriz[m.chave] - totalGeral[m.chave])}</td>`).join('')}</tr>`;
 
-        const labels = janela.map(m=>m.label); let datasetsBarras = [];
+        // Gráficos
+        const labels = janela.map(m=>m.label);
+        let datasetsBarras = [];
         catFixo.forEach(c => datasetsBarras.push({ label: `Fixo: ${c}`, data: janela.map(m => matrizF[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-fixo)' }));
         catVar.forEach(c => datasetsBarras.push({ label: `Var: ${c}`, data: janela.map(m => matrizV[c][m.chave]), backgroundColor: coresDistintasGrafico[c] || 'var(--chart-variavel)' }));
 
-        if(chartBar) chartBar.destroy(); chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), { type: 'bar', data: { labels, datasets: datasetsBarras }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } } });
+        if(chartBar) chartBar.destroy();
+        chartBar = new Chart(document.getElementById('graficoBarras').getContext('2d'), {
+            type: 'bar', data: { labels, datasets: datasetsBarras },
+            options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+        });
 
-        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0); const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
-        if(chartDoughnut) chartDoughnut.destroy(); chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), { type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } } });
+        const sumF = janela.map(m=>totalF[m.chave]).reduce((a,b)=>a+b,0);
+        const sumV = janela.map(m=>totalV[m.chave]).reduce((a,b)=>a+b,0);
+        if(chartDoughnut) chartDoughnut.destroy();
+        chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), {
+            type: 'doughnut', data: { labels: ['Custo Fixo', 'Custo Variável'], datasets: [{ data: [sumF, sumV], backgroundColor: ['#8b5cf6', '#3b82f6'] }] },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+        });
     }
 
     function renderFaturas() {
         const tb = document.querySelector('#tabelaFaturas tbody'); tb.innerHTML = '';
         if(cartoes.length === 0) { tb.innerHTML = `<tr><td colspan="7">Cadastre cartões primeiro.</td></tr>`; return; }
-
         let janelaFat = []; const hoje = new Date();
         for(let i=-3; i<=12; i++) { let d = new Date(hoje.getFullYear(), hoje.getMonth()+i, 1); janelaFat.push({ chave: d.getFullYear()*12 + d.getMonth(), label: `${mesesLabels[d.getMonth()]}/${String(d.getFullYear()).slice(-2)}`, ano: d.getFullYear(), mes: d.getMonth() }); }
-
         let matrizFaturas = {}; cartoes.forEach(c => { matrizFaturas[c.id] = {}; janelaFat.forEach(m => matrizFaturas[c.id][m.chave]=0); });
-
-        lancamentos.filter(l => l.formaPagamento.includes('Crédito') && l.idCartao).forEach(l => {
+        lancamentos.filter(l => l.formaPagamento && l.formaPagamento.includes('Crédito') && l.idCartao).forEach(l => {
             const start = getMesAbsolutoBase(l);
             for(let i=0; i<l.qtdParcelas; i++) { if(matrizFaturas[l.idCartao] && matrizFaturas[l.idCartao][start+i] !== undefined) matrizFaturas[l.idCartao][start+i] += l.valorParcela; }
         });
-
         hoje.setHours(0,0,0,0);
         janelaFat.forEach(m => {
             cartoes.forEach(c => {
                 const val = matrizFaturas[c.id][m.chave]; if(val === 0) return;
                 const fatKey = `${c.id}_${m.chave}`; const pago = faturasPagas[fatKey]; const dv = new Date(m.ano, m.mes, c.diaVenc);
-                let status = "Pendente", cls = "pendente";
-                if(pago) { status = "Paga"; cls = "paga"; } else if(hoje > dv) { status = "Atraso"; cls = "atraso"; }
-
-                tb.innerHTML += `<tr><td><b>${c.nome}</b></td><td>${m.label}</td><td>${dv.toLocaleDateString('pt-BR')}</td><td><b>${formatReal(val)}</b></td><td><span class="badge badge-status ${cls}">${status.toUpperCase()}</span></td><td>${pago ? new Date(pago.data+'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td><td>${pago ? `<button class="btn btn-secondary btn-xs" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}" value="${new Date().toISOString().split('T')[0]}"> <button class="btn btn-primary btn-xs" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td></tr>`;
+                let status = "Pendente", cls = "pendente"; if(pago) { status = "Paga"; cls = "paga"; } else if(hoje > dv) { status = "Atraso"; cls = "atraso"; }
+                tb.innerHTML += `<tr><td><b>${c.nome}</b></td><td>${m.label}</td><td>${dv.toLocaleDateString('pt-BR')}</td><td><b>${formatReal(val)}</b></td><td><span class="badge badge-status ${cls}">${status.toUpperCase()}</span></td><td>${pago ? new Date(pago.data+'T00:00:00').toLocaleDateString('pt-BR') : '-'}</td><td>${pago ? `<button class="btn btn-secondary btn-xs" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}"> <button class="btn btn-primary btn-xs" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td></tr>`;
             });
         });
     }
 
-    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) return; faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); showToast("Fatura paga com sucesso!", "success"); }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt }]); showToast("Fatura paga!", "success"); }
     async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); showToast("Fatura reaberta.", "warning"); }
+    
+    function formatReal(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function Skinner(v) { return parseFloat(v) || 0; }
+    function alterarAba(id, btn) {
+        document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).style.display = 'block'; btn.classList.add('active');
+        if(id === 'aba-dashboard') renderDashboard(); if(id === 'aba-faturas') renderFaturas();
+        if(id === 'aba-comparativo') renderComparativo(); if(id === 'aba-variavel' || id === 'aba-fixo' || id === 'aba-ganhos') renderTabelasLancamentos();
+    }
+    function calcularDinâmico(tipo) {
+        if(tipo === 'Var') {
+            const modo = document.querySelector('input[name="modoCalcVar"]:checked').value;
+            const qtd = parseInt(document.getElementById('qtdParcVar').value) || 1;
+            const inTot = document.getElementById('valTotalVar'); const inParc = document.getElementById('valParcVar');
+            if (modo === 'total') { inTot.readOnly = false; inParc.readOnly = true; inParc.value = (Skinner(inTot.value) / qtd).toFixed(2); } 
+            else { inParc.readOnly = false; inTot.readOnly = true; inTot.value = (Skinner(inParc.value) * qtd).toFixed(2); }
+        }
+    }
+    function ajustarFormulario(tipo) {
+        const pgto = document.getElementById(`pgto${tipo}`).value; const contCartao = document.getElementById(`containerCartao${tipo}`); const selCartao = document.getElementById(`cartao${tipo}`);
+        if (pgto && pgto.includes('Crédito')) { contCartao.style.display = 'flex'; selCartao.required = true; } else { contCartao.style.display = 'none'; selCartao.required = false; selCartao.value = ''; }
+        if(tipo === 'Var') {
+            const qtd = document.getElementById('qtdParcVar');
+            if (pgto === 'Crédito Parcelado') { qtd.disabled = false; if(qtd.value < 2) qtd.value = 2; } else { qtd.disabled = true; qtd.value = 1; }
+            calcularDinâmico('Var');
+        }
+    }
     function exportarParaExcel() { if(lancamentos.length === 0) { showToast("Sem dados para exportar.", "warning"); return; } const dictC = Object.fromEntries(cartoes.map(c=>[c.id, c.nome])); const ws = XLSX.utils.json_to_sheet(lancamentos.map(l => ({ 'Tipo': l.tipo, 'Data': l.data, 'Descrição': l.descricao, 'Categoria': l.categoria, 'Pagamento': l.formaPagamento, 'Cartão': dictC[l.idCartao]||'', 'Valor Parcela/Mensal': l.valorParcela, 'Parcelas/Meses': l.qtdParcelas, 'Total': l.valorParcela*l.qtdParcelas }))); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Dados"); XLSX.writeFile(wb, "FinancePro_Export.xlsx"); showToast("Planilha exportada!", "success"); }
 </script>
 </body>
