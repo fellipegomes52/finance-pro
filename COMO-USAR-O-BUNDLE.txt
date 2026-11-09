@@ -1,0 +1,38 @@
+finance-pro-auth-supabase.bundle
+================================
+
+O que é: os 2 commits novos do Finance Pro, empacotados num arquivo só.
+Serve caso você prefira mandar pelo Git em vez de subir os arquivos pelo
+site do GitHub.
+
+Por que existe: o push daqui é recusado — o proxy de git desta sessão não
+tem o repositório fellipegomes52/finance-pro na lista autorizada, então ele
+não injeta credencial e o GitHub devolve 403.
+
+COMO USAR (no seu PC, com o Git instalado)
+------------------------------------------
+Se você já tem o repositório clonado:
+
+    cd caminho\para\finance-pro
+    git fetch C:\Users\Projetos\Documents\AlvaDocs\publicar-finance-pro\finance-pro-auth-supabase.bundle auth-supabase:auth-supabase
+    git checkout auth-supabase
+    git push -u origin auth-supabase
+
+Se não tem clone nenhum:
+
+    git clone C:\Users\Projetos\Documents\AlvaDocs\publicar-finance-pro\finance-pro-auth-supabase.bundle finance-pro
+    cd finance-pro
+    git remote set-url origin https://github.com/fellipegomes52/finance-pro.git
+    git push -u origin auth-supabase
+
+Depois abra o Pull Request no GitHub e faça o merge em main.
+
+ATENÇÃO: o bundle traz só o index.html. Os arquivos do app instalável
+(manifest.webmanifest, sw.js e os 4 ícones) estão soltos nesta mesma pasta
+e precisam ir junto.
+
+MAIS SIMPLES
+------------
+Se não quiser mexer com Git: no site do GitHub, no repositório finance-pro,
+use "Add file" > "Upload files", arraste os 7 arquivos desta pasta e
+confirme o commit em main. Dá no mesmo e é mais rápido.

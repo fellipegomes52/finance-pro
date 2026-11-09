@@ -90,6 +90,8 @@
         .btn-icone { width: 34px; height: 34px; padding: 0; }
         .btn-action-del { border: none; background: transparent; color: rgb(var(--tinta-3)); width: 32px; height: 32px; border-radius: 10px; cursor: pointer; }
         .btn-action-del:hover { color: rgb(var(--crit)); background: rgb(var(--crit-suave)); }
+        .btn-action-edit { border: none; background: transparent; color: rgb(var(--tinta-3)); width: 32px; height: 32px; border-radius: 10px; cursor: pointer; }
+        .btn-action-edit:hover { color: rgb(var(--azul)); background: rgb(var(--afundado)); }
 
         /* ---------- campos ---------- */
         .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
@@ -179,6 +181,50 @@
         .card-value.accent { color: rgb(var(--azul)); }
 
         /* ---------- abas ---------- */
+        /* --- janela (editar lançamento, detalhe da fatura, dias do cartão) --- */
+        .janela { position: fixed; inset: 0; z-index: 120; display: none; }
+        .janela.aberta { display: block; }
+        .janela-fundo { position: absolute; inset: 0; background: rgba(8,24,40,.55); backdrop-filter: blur(2px); }
+        .janela-caixa { position: relative; margin: 40px auto; max-width: 680px; width: calc(100% - 32px);
+            max-height: calc(100vh - 80px); display: flex; flex-direction: column;
+            background: rgb(var(--painel)); border: 1px solid rgb(var(--linha)); border-radius: 18px; box-shadow: var(--sombra-flutua); }
+        .janela-topo { display: flex; align-items: flex-start; gap: 12px; padding: 20px 24px 14px; border-bottom: 1px solid rgb(var(--linha)); }
+        .janela-topo h2 { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 600; color: rgb(var(--tinta)); margin: 0; }
+        .janela-topo p { margin: 3px 0 0; font-size: 13px; color: rgb(var(--tinta-3)); }
+        .janela-fechar { margin-left: auto; border: none; background: transparent; color: rgb(var(--tinta-3));
+            font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 8px; }
+        .janela-fechar:hover { background: rgb(var(--afundado)); color: rgb(var(--tinta)); }
+        .janela-corpo { padding: 20px 24px; overflow: auto; }
+        .janela-pe { display: flex; gap: 10px; justify-content: flex-end; padding: 14px 24px 20px; border-top: 1px solid rgb(var(--linha)); }
+        .janela-corpo table { width: 100%; }
+        .aviso-faixa { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; border-radius: 14px;
+            background: rgb(var(--crit-suave)); border: 1px solid rgba(var(--crit), .35); color: rgb(var(--tinta));
+            font-size: 14px; line-height: 1.5; }
+        .aviso-faixa i { color: rgb(var(--crit)); font-size: 16px; margin-top: 2px; }
+        .aviso-faixa b { color: rgb(var(--crit)); }
+        .linha-clicavel { cursor: pointer; }
+        .linha-clicavel:hover { background: rgb(var(--afundado)); }
+        .dias-mes { display: grid; grid-template-columns: 1.1fr 1fr 1fr auto; gap: 10px; align-items: end;
+            padding: 10px 0; border-bottom: 1px solid rgb(var(--linha)); }
+        .dias-mes:last-child { border-bottom: none; }
+        .dias-mes .rotulo { font-weight: 600; color: rgb(var(--tinta)); font-size: 14px; }
+        .dias-mes .rotulo span { display: block; font-weight: 400; font-size: 12px; color: rgb(var(--tinta-3)); }
+        .dias-mes input { width: 100%; }
+        .dias-cab { display: grid; grid-template-columns: 1.1fr 1fr 1fr auto; gap: 10px;
+            font-size: 12px; font-weight: 600; color: rgb(var(--tinta-3)); text-transform: uppercase; letter-spacing: .04em;
+            padding-bottom: 8px; border-bottom: 1px solid rgb(var(--linha)); }
+        .dias-mes .mini { display: none; }
+        @media (max-width: 600px) {
+            .janela-caixa { margin: 12px auto; max-height: calc(100vh - 24px); }
+            .dias-mes, .dias-cab { grid-template-columns: 1fr 1fr; }
+            .dias-cab { display: none; }
+            .dias-mes .rotulo { grid-column: 1 / -1; }
+            /* sem o cabeçalho da tabela, cada campo precisa dizer o que é */
+            .dias-mes .mini { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase;
+                letter-spacing: .04em; color: rgb(var(--tinta-3)); margin-bottom: 4px; }
+            .dias-mes > button { grid-column: 1 / -1; justify-self: start; }
+        }
+
         /* --- acessos, tela de espera e botão de instalar --- */
         .selo { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px;
                 font-size:12px; font-weight:600; white-space:nowrap; }
@@ -418,6 +464,22 @@
                 <button type="submit" class="btn btn-ouro btn-largo">Salvar nova senha</button>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- ===================== JANELA (reaproveitada) ===================== -->
+<div id="janela" class="janela" role="dialog" aria-modal="true" aria-labelledby="janelaTitulo">
+    <div class="janela-fundo" onclick="fecharJanela()"></div>
+    <div class="janela-caixa">
+        <div class="janela-topo">
+            <div style="min-width:0">
+                <h2 id="janelaTitulo">Título</h2>
+                <p id="janelaSub"></p>
+            </div>
+            <button type="button" class="janela-fechar" onclick="fecharJanela()" aria-label="Fechar">&times;</button>
+        </div>
+        <div class="janela-corpo" id="janelaCorpo"></div>
+        <div class="janela-pe" id="janelaPe"></div>
     </div>
 </div>
 
@@ -751,6 +813,7 @@
 
         <!-- faturas -->
         <div id="aba-faturas" class="tab-content">
+            <div id="avisoSemCartao" class="aviso-faixa" style="display:none"></div>
             <section class="cartao">
                 <h2 class="cartao-titulo">Faturas dos cartões <span class="resto">pelos custos fixos e variáveis lançados no cartão</span></h2>
                 <div class="table-responsive">
@@ -778,7 +841,7 @@
                 </div>
                 <div class="table-responsive" style="border-top:1px solid rgb(var(--linha))">
                     <table id="tabelaCartoes">
-                        <thead><tr><th>Cartão</th><th class="num">Melhor dia</th><th class="num">Vencimento</th><th></th></tr></thead>
+                        <thead><tr><th>Cartão</th><th class="num">Melhor dia</th><th class="num">Vencimento</th><th>Exceções</th><th></th></tr></thead>
                         <tbody></tbody>
                     </table>
                 </div>
@@ -826,7 +889,7 @@
     let dbClient = null;
     let bancoNuvemAtivo = false;
 
-    let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null; let pessoas = [];
+    let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null; let pessoas = []; let cartaoMeses = [];
     let chartBar = null; let chartDoughnut = null;
 
     const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -1048,7 +1111,7 @@
 
     async function logout() {
         try { await dbClient.auth.signOut(); } catch (e) { console.error(e); }
-        usuarioLogado = null; lancamentos = []; cartoes = []; faturasPagas = {}; pessoas = [];
+        usuarioLogado = null; lancamentos = []; cartoes = []; faturasPagas = {}; pessoas = []; cartaoMeses = [];
         mostrarSomente('acesso'); mudarTelaAuth('login');
     }
 
@@ -1064,6 +1127,9 @@
             
             const { data: dF } = await dbClient.from('faturas_pagas').select('*').eq('id_usuario', usuarioLogado.id);
             if (dF) { faturasPagas = {}; dF.forEach(f => faturasPagas[f.chave] = { data: f.data }); }
+
+            const { data: dM } = await dbClient.from('cartao_meses').select('*').eq('id_usuario', usuarioLogado.id);
+            if (dM) cartaoMeses = dM;
         } catch (e) { console.error(e); }
         atualizarTelaInteira(); document.getElementById('loadingOverlay').style.display = 'none';
     }
@@ -1117,13 +1183,49 @@
     };
     
     async function delCartao(id) {
-        if(confirm("Excluir cartão?")) { cartoes = cartoes.filter(c => c.id !== id); atualizarTelaInteira(); await dbClient.from('cartoes').delete().eq('id', id); }
+        const c = cartoes.find(x => x.id === id); if (!c) return;
+        const presas = lancamentos.filter(l => l.idCartao === id);
+        let aviso = `Excluir o cartão ${c.nome}?`;
+        if (presas.length) {
+            const soma = presas.reduce((t, l) => t + l.valorParcela * l.qtdParcelas, 0);
+            aviso += `\n\nATENÇÃO: ${presas.length} ${presas.length === 1 ? 'compra está' : 'compras estão'} nesse cartão, somando ${formatReal(soma)}.`
+                  +  `\nElas NÃO são apagadas, mas ficam sem cartão e somem das faturas até você escolher outro cartão em cada uma.`
+                  +  `\n\nSe o cartão só mudou de nome ou de dia, use Editar em vez de excluir.`;
+        }
+        if (!confirm(aviso)) return;
+        cartoes = cartoes.filter(x => x.id !== id);
+        presas.forEach(l => { l.idCartao = null; });
+        atualizarTelaInteira();
+        const { error } = await dbClient.from('cartoes').delete().eq('id', id);
+        if (error) { showToast("Não deu para excluir: " + error.message, "error"); await carregarDadosDaNuvem(); return; }
+        showToast(presas.length ? `Cartão excluído. ${presas.length} ${presas.length === 1 ? 'compra ficou' : 'compras ficaram'} sem cartão.` : "Cartão excluído.", "warning");
+    }
+
+    // Compra no crédito que ficou sem cartão não entra em fatura nenhuma.
+    function semCartao(l) {
+        return !!l.formaPagamento && l.formaPagamento.includes('Crédito') && !l.idCartao;
+    }
+    function celulaCartao(l, dictC) {
+        if (semCartao(l)) return `<span class="selo selo-bloq" title="Compra no crédito sem cartão: ela não entra em nenhuma fatura. Clique em editar e escolha o cartão."><i class="fa-solid fa-triangle-exclamation"></i> sem cartão</span>`;
+        return dictC[l.idCartao] || '<span style="color:rgb(var(--tinta-3))">—</span>';
     }
 
     function renderCartoes() {
         const tb = document.querySelector('#tabelaCartoes tbody'); tb.innerHTML = '';
-        if (!cartoes.length) tb.innerHTML = `<tr><td colspan="4" class="vazio">Nenhum cartão cadastrado.</td></tr>`;
-        cartoes.forEach(c => tb.innerHTML += `<tr><td><b>${c.nome}</b></td><td class="num">dia ${c.melhorDia}</td><td class="num">dia ${c.diaVenc}</td><td><button class="btn-action-del" onclick="delCartao('${c.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></td></tr>`);
+        if (!cartoes.length) tb.innerHTML = `<tr><td colspan="5" class="vazio">Nenhum cartão cadastrado.</td></tr>`;
+        cartoes.forEach(c => {
+            const ajustes = cartaoMeses.filter(x => x.id_cartao === c.id).length;
+            tb.innerHTML += `<tr>
+                <td><b>${escapar(c.nome)}</b></td>
+                <td class="num">dia ${c.melhorDia}</td>
+                <td class="num">dia ${c.diaVenc}</td>
+                <td>${ajustes ? `<span class="selo selo-espera"><i class="fa-regular fa-calendar"></i> ${ajustes} ${ajustes === 1 ? 'mês ajustado' : 'meses ajustados'}</span>` : '<span style="color:rgb(var(--tinta-3))">—</span>'}</td>
+                <td><div class="acoes-linha">
+                    <button class="btn btn-sm" onclick="ajustarDiasCartao('${c.id}')" title="Meses em que o banco mudou o fechamento"><i class="fa-regular fa-calendar-days"></i> Dias por mês</button>
+                    <button class="btn-action-edit" onclick="editarCartao('${c.id}')" title="Editar" aria-label="Editar"><i class="fa-regular fa-pen-to-square"></i></button>
+                    <button class="btn-action-del" onclick="delCartao('${c.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button>
+                </div></td></tr>`;
+        });
     }
     function atualizarSelectsCartoes() {
         document.querySelectorAll('.cartaoSelect').forEach(s => s.innerHTML = '<option value="">Selecione…</option>' + cartoes.map(c => `<option value="${c.id}">${c.nome}</option>`).join(''));
@@ -1136,27 +1238,32 @@
         const ganhos = lancamentos.filter(l => l.tipo === 'Ganho').reverse();
         if (!ganhos.length) tbGan.innerHTML = `<tr><td colspan="8" class="vazio">Nenhuma entrada ainda. Use o formulário acima.</td></tr>`;
         ganhos.forEach(l => {
-            tbGan.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria, 'rgb(var(--ok))')}</td><td>${l.formaPagamento}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas} m</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></td></tr>`;
+            tbGan.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria, 'rgb(var(--ok))')}</td><td>${l.formaPagamento}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas} m</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><div class="acoes-linha"><button class="btn-action-edit" onclick="editarLanc('${l.id}')" title="Editar" aria-label="Editar"><i class="fa-regular fa-pen-to-square"></i></button><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></div></td></tr>`;
         });
 
         const tbVar = document.querySelector('#tabelaVar tbody'); tbVar.innerHTML = '';
         const variaveis = lancamentos.filter(l => l.tipo === 'Variavel').reverse();
         if (!variaveis.length) tbVar.innerHTML = `<tr><td colspan="9" class="vazio">Nenhum custo variável ainda.</td></tr>`;
         variaveis.forEach(l => {
-            tbVar.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria)}</td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'—'}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas}x</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></td></tr>`;
+            tbVar.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria)}</td><td>${l.formaPagamento}</td><td>${celulaCartao(l, dictC)}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas}x</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><div class="acoes-linha"><button class="btn-action-edit" onclick="editarLanc('${l.id}')" title="Editar" aria-label="Editar"><i class="fa-regular fa-pen-to-square"></i></button><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></div></td></tr>`;
         });
 
         const tbFix = document.querySelector('#tabelaFix tbody'); tbFix.innerHTML = '';
         const fixos = lancamentos.filter(l => l.tipo === 'Fixo').reverse();
         if (!fixos.length) tbFix.innerHTML = `<tr><td colspan="9" class="vazio">Nenhum custo fixo ainda.</td></tr>`;
         fixos.forEach(l => {
-            tbFix.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria)}</td><td>${l.formaPagamento}</td><td>${dictC[l.idCartao]||'—'}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas} meses</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></td></tr>`;
+            tbFix.innerHTML += `<tr><td>${dataBR(l.data)}</td><td>${l.descricao}</td><td>${pilulaCat(l.categoria)}</td><td>${l.formaPagamento}</td><td>${celulaCartao(l, dictC)}</td><td class="num">${formatReal(l.valorParcela)}</td><td class="num">${l.qtdParcelas} meses</td><td class="num"><b>${formatReal(l.valorParcela * l.qtdParcelas)}</b></td><td><div class="acoes-linha"><button class="btn-action-edit" onclick="editarLanc('${l.id}')" title="Editar" aria-label="Editar"><i class="fa-regular fa-pen-to-square"></i></button><button class="btn-action-del" onclick="delLanc('${l.id}')" title="Excluir" aria-label="Excluir"><i class="fa-regular fa-trash-can"></i></button></div></td></tr>`;
         });
     }
 
     function getMesAbsolutoBase(l) {
         const d = new Date(l.data+'T00:00:00'); const mesBase = d.getFullYear() * 12 + d.getMonth(); let shift = 0;
-        if (l.formaPagamento && l.formaPagamento.includes('Crédito')) { const c = cartoes.find(x => x.id === l.idCartao); const melhorDia = c ? c.melhorDia : 31; if (d.getDate() >= melhorDia) shift = 1; }
+        if (l.formaPagamento && l.formaPagamento.includes('Crédito')) {
+            const c = cartoes.find(x => x.id === l.idCartao);
+            // o fechamento que vale é o do mês em que a compra foi feita
+            const melhorDia = c ? diasDoCartao(c, mesBase).melhorDia : 31;
+            if (d.getDate() >= melhorDia) shift = 1;
+        }
         return mesBase + shift;
     }
 
@@ -1290,7 +1397,25 @@
         if(chartDoughnut) chartDoughnut.destroy(); chartDoughnut = new Chart(document.getElementById('graficoRosca').getContext('2d'), { type: 'doughnut', data: { labels: ['Custo fixo', 'Custo variável'], datasets: [{ data: [sumF, sumV], backgroundColor: [cg.roxo, cg.azul], borderColor: cg.painel, borderWidth: 3 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } }, tooltip: { callbacks: { label: c => `${c.label}: ${formatReal(c.parsed)}` } } } } });
     }
 
+    // Compras no crédito que ficaram sem cartão não aparecem em fatura nenhuma.
+    // Fica fora do renderFaturas porque precisa aparecer mesmo sem nenhum cartão —
+    // que é justamente quando o problema acontece.
+    function avisarComprasSemCartao() {
+        const faixa = document.getElementById('avisoSemCartao');
+        if (!faixa) return;
+        const orfas = lancamentos.filter(semCartao);
+        if (!orfas.length) { faixa.style.display = 'none'; return; }
+        const soma = orfas.reduce((t, l) => t + l.valorParcela * l.qtdParcelas, 0);
+        faixa.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i>
+            <div><b>${orfas.length} ${orfas.length === 1 ? 'compra no crédito está' : 'compras no crédito estão'} sem cartão</b>
+            (${formatReal(soma)} no total) e por isso não ${orfas.length === 1 ? 'entra' : 'entram'} em nenhuma fatura abaixo.
+            Isso acontece quando o cartão é excluído depois das compras.
+            Abra <b>Custo variável</b> ou <b>Custo fixo</b>, clique no lápis da linha marcada em vermelho e escolha o cartão.</div>`;
+        faixa.style.display = '';
+    }
+
     function renderFaturas() {
+        avisarComprasSemCartao();
         const tb = document.querySelector('#tabelaFaturas tbody'); tb.innerHTML = '';
         if(cartoes.length === 0) { tb.innerHTML = `<tr><td colspan="7" class="vazio">Cadastre um cartão em <b>Meus cartões</b> para ver as faturas.</td></tr>`; return; }
         let janelaFat = []; const hoje = new Date();
@@ -1305,18 +1430,271 @@
         janelaFat.forEach(m => {
             cartoes.forEach(c => {
                 const val = matrizFaturas[c.id][m.chave]; if(val === 0) return;
-                const fatKey = `${c.id}_${m.chave}`; const pago = faturasPagas[fatKey]; const dv = new Date(m.ano, m.mes, c.diaVenc);
+                const fatKey = `${c.id}_${m.chave}`; const pago = faturasPagas[fatKey];
+                const dv = dataVencimento(c, m.ano, m.mes);
+                const ajustado = diasDoCartao(c, m.chave).ajustado;
                 let status = "Pendente", cls = "alerta"; if(pago) { status = "Paga"; cls = "ok"; } else if(hoje > dv) { status = "Atrasada"; cls = "crit"; }
+                const qtdItens = comprasDaFatura(c.id, m.chave).length;
                 linhasFat++;
-                tb.innerHTML += `<tr><td><b>${c.nome}</b></td><td>${m.label}</td><td>${dv.toLocaleDateString('pt-BR')}</td><td class="num"><b>${formatReal(val)}</b></td><td><span class="pilula ${cls}"><span class="ponto"></span>${status}</span></td><td>${pago ? dataBR(pago.data) : '—'}</td><td>${pago ? `<button class="btn btn-sm" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}" aria-label="Data do pagamento"> <button class="btn btn-ouro btn-sm" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td></tr>`;
+                tb.innerHTML += `<tr>
+                    <td class="linha-clicavel" onclick="verFatura('${c.id}', ${m.chave})" title="Ver as compras desta fatura"><b>${escapar(c.nome)}</b></td>
+                    <td class="linha-clicavel" onclick="verFatura('${c.id}', ${m.chave})">${m.label}</td>
+                    <td class="linha-clicavel" onclick="verFatura('${c.id}', ${m.chave})">${dv.toLocaleDateString('pt-BR')}${ajustado ? ' <span class="selo selo-espera" title="Mês com dia ajustado">ajustado</span>' : ''}</td>
+                    <td class="num linha-clicavel" onclick="verFatura('${c.id}', ${m.chave})"><b>${formatReal(val)}</b><span style="display:block;font-size:12px;font-weight:400;color:rgb(var(--tinta-3))">${qtdItens} ${qtdItens === 1 ? 'compra' : 'compras'}</span></td>
+                    <td><span class="pilula ${cls}"><span class="ponto"></span>${status}</span></td>
+                    <td>${pago ? dataBR(pago.data) : '—'}</td>
+                    <td>${pago ? `<button class="btn btn-sm" onclick="estornarFat('${fatKey}')">Reabrir</button>` : `<div class="inline-pay-form"><input type="date" id="dt_${fatKey}" aria-label="Data do pagamento"> <button class="btn btn-ouro btn-sm" onclick="pagarFat('${fatKey}')">Pagar</button></div>`}</td></tr>`;
             });
         });
         if (!linhasFat) tb.innerHTML = `<tr><td colspan="7" class="vazio">Nenhuma compra no cartão nos próximos meses.</td></tr>`;
+
     }
 
     async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt, id_usuario: usuarioLogado.id }], { onConflict: 'id_usuario,chave' }); showToast("Fatura paga!", "success"); }
     async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); showToast("Fatura reaberta.", "warning"); }
     
+    /* ---------- JANELA REAPROVEITADA ---------- */
+    function abrirJanela(titulo, sub, corpo, pe) {
+        document.getElementById('janelaTitulo').innerText = titulo;
+        const elSub = document.getElementById('janelaSub');
+        elSub.innerText = sub || ''; elSub.style.display = sub ? '' : 'none';
+        document.getElementById('janelaCorpo').innerHTML = corpo;
+        document.getElementById('janelaPe').innerHTML = pe || '';
+        document.getElementById('janela').classList.add('aberta');
+        document.body.style.overflow = 'hidden';
+    }
+    function fecharJanela() {
+        document.getElementById('janela').classList.remove('aberta');
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') fecharJanela(); });
+
+    function opcoesDe(idSelect, valorAtual) {
+        const base = document.getElementById(idSelect);
+        if (!base) return '';
+        return [...base.options].filter(o => o.value).map(o =>
+            `<option value="${o.value}"${o.value === valorAtual ? ' selected' : ''}>${o.text}</option>`).join('');
+    }
+    function opcoesCartao(valorAtual) {
+        return '<option value="">Selecione…</option>' + cartoes.map(c =>
+            `<option value="${c.id}"${c.id === valorAtual ? ' selected' : ''}>${c.nome}</option>`).join('');
+    }
+    function escapar(t) {
+        return String(t == null ? '' : t).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    /* ---------- DIAS DO CARTÃO (padrão + exceções por mês) ---------- */
+    function diasNoMes(ano, mes) { return new Date(ano, mes + 1, 0).getDate(); }
+
+    // competencia = ano*12 + mes (mês de 0 a 11), a mesma chave usada nas faturas
+    function diasDoCartao(cartao, competencia) {
+        if (!cartao) return { melhorDia: 31, diaVenc: 10, ajustado: false };
+        const ex = cartaoMeses.find(x => x.id_cartao === cartao.id && x.competencia === competencia);
+        const melhorDia = (ex && ex.melhorDia != null) ? ex.melhorDia : cartao.melhorDia;
+        const diaVenc   = (ex && ex.diaVenc   != null) ? ex.diaVenc   : cartao.diaVenc;
+        const ajustado  = !!ex && (melhorDia !== cartao.melhorDia || diaVenc !== cartao.diaVenc);
+        return { melhorDia, diaVenc, ajustado };
+    }
+    function dataVencimento(cartao, ano, mes) {
+        const d = diasDoCartao(cartao, ano * 12 + mes).diaVenc;
+        return new Date(ano, mes, Math.min(d, diasNoMes(ano, mes)));
+    }
+
+    async function ajustarDiasCartao(idCartao) {
+        const c = cartoes.find(x => x.id === idCartao); if (!c) return;
+        const hoje = new Date();
+        const inicio = hoje.getFullYear() * 12 + hoje.getMonth() - 1;
+        const comps = [];
+        for (let i = 0; i < 15; i++) comps.push(inicio + i);
+        cartaoMeses.filter(x => x.id_cartao === idCartao && !comps.includes(x.competencia))
+                   .forEach(x => comps.push(x.competencia));
+        comps.sort((a, b) => a - b);
+
+        const linhas = comps.map(k => {
+            const ano = Math.floor(k / 12), mes = k % 12;
+            const d = diasDoCartao(c, k);
+            const ehEste = k === hoje.getFullYear() * 12 + hoje.getMonth();
+            return `<div class="dias-mes">
+                <div class="rotulo">${mesesLabels[mes]}/${String(ano).slice(-2)}
+                    <span>${ehEste ? 'mês atual' : (d.ajustado ? 'ajustado' : 'padrão do cartão')}</span></div>
+                <div class="form-group" style="margin:0"><span class="mini">Melhor dia</span><input type="number" min="1" max="31" id="md_${k}" value="${d.melhorDia}" aria-label="Melhor dia de ${mesesLabels[mes]}"></div>
+                <div class="form-group" style="margin:0"><span class="mini">Vencimento</span><input type="number" min="1" max="31" id="dv_${k}" value="${d.diaVenc}" aria-label="Vencimento de ${mesesLabels[mes]}"></div>
+                <button type="button" class="btn btn-sm" onclick="voltarAoPadrao(${k}, ${c.melhorDia}, ${c.diaVenc})" title="Voltar ao padrão do cartão">Padrão</button>
+            </div>`;
+        }).join('');
+
+        abrirJanela(`Dias de ${c.nome}`,
+            `O padrão é melhor dia ${c.melhorDia} e vencimento dia ${c.diaVenc}. Mude só os meses em que o banco alterou — o resto segue o padrão sozinho.`,
+            `<div class="dias-cab"><div>Mês</div><div>Melhor dia</div><div>Vencimento</div><div></div></div>${linhas}`,
+            `<button class="btn" onclick="fecharJanela()">Cancelar</button>
+             <button class="btn btn-ouro" onclick="salvarDiasCartao('${c.id}', [${comps.join(',')}])"><i class="fa-solid fa-check"></i> Salvar</button>`);
+    }
+
+    function voltarAoPadrao(k, md, dv) {
+        document.getElementById('md_' + k).value = md;
+        document.getElementById('dv_' + k).value = dv;
+    }
+
+    async function salvarDiasCartao(idCartao, comps) {
+        const c = cartoes.find(x => x.id === idCartao); if (!c) return;
+        const guardar = [], apagar = [];
+        for (const k of comps) {
+            const md = parseInt(document.getElementById('md_' + k).value);
+            const dv = parseInt(document.getElementById('dv_' + k).value);
+            if (!(md >= 1 && md <= 31) || !(dv >= 1 && dv <= 31)) {
+                showToast("Os dias precisam ficar entre 1 e 31.", "warning"); return;
+            }
+            if (md === c.melhorDia && dv === c.diaVenc) apagar.push(k);
+            else guardar.push({ id_usuario: usuarioLogado.id, id_cartao: idCartao, competencia: k, melhorDia: md, diaVenc: dv });
+        }
+        try {
+            if (guardar.length) {
+                const { error } = await dbClient.from('cartao_meses').upsert(guardar, { onConflict: 'id_usuario,id_cartao,competencia' });
+                if (error) throw error;
+            }
+            if (apagar.length) {
+                const { error } = await dbClient.from('cartao_meses').delete().eq('id_cartao', idCartao).in('competencia', apagar);
+                if (error) throw error;
+            }
+            cartaoMeses = cartaoMeses.filter(x => !(x.id_cartao === idCartao && comps.includes(x.competencia)));
+            guardar.forEach(g => cartaoMeses.push(g));
+            fecharJanela();
+            const quantos = guardar.length;
+            showToast(quantos ? `${quantos} ${quantos === 1 ? 'mês ajustado' : 'meses ajustados'}.` : "Todos os meses voltaram ao padrão.", "success");
+            atualizarTelaInteira();
+        } catch (e) { showToast("Erro ao salvar: " + e.message, "error"); }
+    }
+
+    /* ---------- DETALHE DA FATURA ---------- */
+    function comprasDaFatura(idCartao, competencia) {
+        const itens = [];
+        lancamentos.filter(l => l.idCartao === idCartao && l.formaPagamento && l.formaPagamento.includes('Crédito')).forEach(l => {
+            const inicio = getMesAbsolutoBase(l);
+            const n = competencia - inicio;
+            if (n >= 0 && n < l.qtdParcelas) itens.push({ l, parcela: n + 1 });
+        });
+        return itens.sort((a, b) => (a.l.data < b.l.data ? 1 : -1));
+    }
+
+    function verFatura(idCartao, competencia) {
+        const c = cartoes.find(x => x.id === idCartao); if (!c) return;
+        const ano = Math.floor(competencia / 12), mes = competencia % 12;
+        const itens = comprasDaFatura(idCartao, competencia);
+        const total = itens.reduce((t, i) => t + i.l.valorParcela, 0);
+        const d = diasDoCartao(c, competencia);
+        const venc = dataVencimento(c, ano, mes);
+        const pago = faturasPagas[`${idCartao}_${competencia}`];
+
+        const linhas = itens.length ? itens.map(i => `<tr>
+                <td>${dataBR(i.l.data)}</td>
+                <td><b>${escapar(i.l.descricao)}</b></td>
+                <td>${pilulaCat(i.l.categoria)}</td>
+                <td class="num">${i.l.qtdParcelas > 1 ? `${i.parcela} de ${i.l.qtdParcelas}` : 'à vista'}</td>
+                <td class="num"><b>${formatReal(i.l.valorParcela)}</b></td>
+            </tr>`).join('')
+            : `<tr><td colspan="5" class="vazio">Nada nesta fatura.</td></tr>`;
+
+        abrirJanela(`${c.nome} · ${mesesLabels[mes]}/${String(ano).slice(-2)}`,
+            `Vence em ${venc.toLocaleDateString('pt-BR')} · fechou no dia ${d.melhorDia}${d.ajustado ? ' (mês ajustado)' : ''}${pago ? ' · paga em ' + dataBR(pago.data) : ''}`,
+            `<div class="table-responsive"><table>
+                <thead><tr><th>Data</th><th>Compra</th><th>Categoria</th><th class="num">Parcela</th><th class="num">Valor</th></tr></thead>
+                <tbody>${linhas}</tbody>
+                <tfoot><tr><td colspan="4"><b>Total da fatura</b></td><td class="num"><b>${formatReal(total)}</b></td></tr></tfoot>
+            </table></div>`,
+            `<button class="btn" onclick="fecharJanela()">Fechar</button>`);
+    }
+
+    /* ---------- EDITAR LANÇAMENTO ---------- */
+    function editarLanc(id) {
+        const l = lancamentos.find(x => x.id === id); if (!l) return;
+        const ehGanho = l.tipo === 'Ganho';
+        const idCat  = ehGanho ? 'catGan'  : (l.tipo === 'Fixo' ? 'catFix'  : 'catVar');
+        const idPgto = ehGanho ? 'tipoGan' : (l.tipo === 'Fixo' ? 'pgtoFix' : 'pgtoVar');
+        const nomeTipo = ehGanho ? 'entrada' : (l.tipo === 'Fixo' ? 'custo fixo' : 'custo variável');
+        const rotuloQtd = ehGanho || l.tipo === 'Fixo' ? 'Por quantos meses' : 'Parcelas';
+        const rotuloValor = ehGanho ? 'Valor (R$)' : (l.tipo === 'Fixo' ? 'Valor mensal (R$)' : 'Valor da parcela (R$)');
+
+        abrirJanela(`Editar ${nomeTipo}`, 'As mudanças valem para todas as parcelas deste lançamento.',
+            `<div class="grid-form">
+                <div class="form-group"><label for="ed_data">Data</label><input type="date" id="ed_data" value="${l.data || ''}" required></div>
+                <div class="form-group"><label for="ed_desc">Descrição</label><input type="text" id="ed_desc" value="${escapar(l.descricao)}" required></div>
+                <div class="form-group"><label for="ed_cat">Categoria</label>
+                    <select id="ed_cat"><option value="">Selecione…</option>${opcoesDe(idCat, l.categoria)}</select></div>
+                <div class="form-group"><label for="ed_pgto">${ehGanho ? 'Tipo' : 'Pagamento'}</label>
+                    <select id="ed_pgto" onchange="trocouPgtoEdicao()"><option value="">Selecione…</option>${opcoesDe(idPgto, l.formaPagamento)}</select></div>
+                <div class="form-group" id="ed_boxCartao" style="display:${String(l.formaPagamento || '').includes('Crédito') ? '' : 'none'}">
+                    <label for="ed_cartao">Cartão</label><select id="ed_cartao">${opcoesCartao(l.idCartao)}</select></div>
+                <div class="form-group"><label for="ed_valor">${rotuloValor}</label><input type="number" step="0.01" id="ed_valor" value="${l.valorParcela}" required></div>
+                <div class="form-group"><label for="ed_qtd">${rotuloQtd}</label><input type="number" min="1" id="ed_qtd" value="${l.qtdParcelas}" required></div>
+            </div>`,
+            `<button class="btn" onclick="fecharJanela()">Cancelar</button>
+             <button class="btn btn-ouro" onclick="salvarEdicaoLanc('${l.id}')"><i class="fa-solid fa-check"></i> Salvar</button>`);
+    }
+
+    function trocouPgtoEdicao() {
+        const pg = document.getElementById('ed_pgto').value;
+        document.getElementById('ed_boxCartao').style.display = pg.includes('Crédito') ? '' : 'none';
+    }
+
+    async function salvarEdicaoLanc(id) {
+        const l = lancamentos.find(x => x.id === id); if (!l) return;
+        const pgto = document.getElementById('ed_pgto').value;
+        const idCartao = document.getElementById('ed_cartao').value;
+        const patch = {
+            data: document.getElementById('ed_data').value,
+            descricao: document.getElementById('ed_desc').value.trim(),
+            categoria: document.getElementById('ed_cat').value,
+            formaPagamento: pgto,
+            idCartao: pgto.includes('Crédito') ? (idCartao || null) : null,
+            valorParcela: parseFloat(document.getElementById('ed_valor').value),
+            qtdParcelas: parseInt(document.getElementById('ed_qtd').value)
+        };
+        if (!patch.data || !patch.descricao) { showToast("Preencha data e descrição.", "warning"); return; }
+        if (!(patch.valorParcela > 0)) { showToast("O valor precisa ser maior que zero.", "warning"); return; }
+        if (!(patch.qtdParcelas >= 1)) { showToast("A quantidade precisa ser 1 ou mais.", "warning"); return; }
+        if (pgto.includes('Crédito') && !patch.idCartao) { showToast("Escolha o cartão.", "warning"); return; }
+
+        const antes = Object.assign({}, l);
+        Object.assign(l, patch);
+        fecharJanela(); atualizarTelaInteira();
+        const { error } = await dbClient.from('lancamentos').update(patch).eq('id', id);
+        if (error) { Object.assign(l, antes); atualizarTelaInteira(); showToast("Não deu para salvar: " + error.message, "error"); return; }
+        showToast("Lançamento atualizado.", "success");
+    }
+
+    /* ---------- EDITAR CARTÃO ---------- */
+    function editarCartao(id) {
+        const c = cartoes.find(x => x.id === id); if (!c) return;
+        abrirJanela(`Editar ${c.nome}`, 'Estes são os dias padrão. Meses fora do padrão ficam em "Dias por mês".',
+            `<div class="grid-form" style="grid-template-columns:2fr 1fr 1fr">
+                <div class="form-group"><label for="ec_nome">Nome do cartão</label><input type="text" id="ec_nome" value="${escapar(c.nome)}" required></div>
+                <div class="form-group"><label for="ec_md">Melhor dia</label><input type="number" min="1" max="31" id="ec_md" value="${c.melhorDia}" required></div>
+                <div class="form-group"><label for="ec_dv">Vencimento</label><input type="number" min="1" max="31" id="ec_dv" value="${c.diaVenc}" required></div>
+            </div>`,
+            `<button class="btn" onclick="fecharJanela()">Cancelar</button>
+             <button class="btn btn-ouro" onclick="salvarEdicaoCartao('${c.id}')"><i class="fa-solid fa-check"></i> Salvar</button>`);
+    }
+
+    async function salvarEdicaoCartao(id) {
+        const c = cartoes.find(x => x.id === id); if (!c) return;
+        const patch = {
+            nome: document.getElementById('ec_nome').value.trim(),
+            melhorDia: parseInt(document.getElementById('ec_md').value),
+            diaVenc: parseInt(document.getElementById('ec_dv').value)
+        };
+        if (!patch.nome) { showToast("O cartão precisa de um nome.", "warning"); return; }
+        if (!(patch.melhorDia >= 1 && patch.melhorDia <= 31) || !(patch.diaVenc >= 1 && patch.diaVenc <= 31)) {
+            showToast("Os dias precisam ficar entre 1 e 31.", "warning"); return;
+        }
+        const antes = Object.assign({}, c);
+        Object.assign(c, patch);
+        fecharJanela(); atualizarTelaInteira();
+        const { error } = await dbClient.from('cartoes').update(patch).eq('id', id);
+        if (error) { Object.assign(c, antes); atualizarTelaInteira(); showToast("Não deu para salvar: " + error.message, "error"); return; }
+        showToast("Cartão atualizado.", "success");
+    }
+
     /* ---------- ACESSOS (só o master enxerga esta aba) ---------- */
     function situacaoPessoa(p) {
         if (p.aprovado) return { texto: 'Liberado', classe: 'selo-ok', icone: 'fa-circle-check' };
