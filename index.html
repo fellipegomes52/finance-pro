@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Finance Pro</title>
     <meta name="theme-color" content="#0C3357">
+    <meta name="description" content="Finance Pro — controle financeiro pessoal: ganhos, custos fixos e variáveis, cartões e faturas, com projeção de 12 meses.">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="icon" href="icone-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icone-180.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finance Pro">
     <script>
         /* tema antes de desenhar, para não piscar (mesma ideia do AlvaDocs) */
         (function () {
@@ -172,6 +179,23 @@
         .card-value.accent { color: rgb(var(--azul)); }
 
         /* ---------- abas ---------- */
+        /* --- acessos, tela de espera e botão de instalar --- */
+        .selo { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:999px;
+                font-size:12px; font-weight:600; white-space:nowrap; }
+        .selo-ok     { background: rgb(var(--ok-suave));   color: rgb(var(--ok)); }
+        .selo-espera { background: rgb(var(--ouro-suave)); color: rgb(var(--ouro-esc)); }
+        .selo-bloq   { background: rgb(var(--crit-suave)); color: rgb(var(--crit)); }
+        .selo-master { background: rgb(var(--roxo-suave)); color: rgb(var(--roxo)); }
+        .aviso-nav { margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:999px;
+                     background: rgb(var(--ouro)); color: rgb(var(--sobre-ouro)); font-size:11px; font-weight:700;
+                     display:inline-flex; align-items:center; justify-content:center; }
+        .acoes-linha { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+        .espera-caixa { max-width:560px; margin:0 auto; text-align:center; }
+        .espera-icone { width:68px; height:68px; margin:0 auto 18px; border-radius:22px; display:grid; place-items:center;
+                        background: rgb(var(--ouro-suave)); color: rgb(var(--ouro-esc)); font-size:26px; }
+        .passos { text-align:left; margin:18px 0 0; padding-left:20px; color: rgb(var(--tinta-2)); font-size:14px; line-height:1.8; }
+        .btn-instalar { width:100%; justify-content:center; margin-bottom:10px; }
+        @media (display-mode: standalone) { .btn-instalar, #blocoInstalar { display:none !important; } }
         .tab-content { display: none; flex-direction: column; gap: 20px; }
         .tab-content.active { display: flex; }
 
@@ -311,15 +335,18 @@
     </aside>
 
     <div class="auth-form">
-        <div class="topo"><button type="button" class="btn btn-fantasma btn-icone" onclick="alternarTema()" aria-label="Trocar tema" title="Trocar tema"><i class="fa-solid fa-circle-half-stroke"></i></button></div>
+        <div class="topo">
+            <button type="button" id="instalarAcesso" class="btn btn-fantasma btn-sm" style="display:none" onclick="instalarApp()"><i class="fa-solid fa-mobile-screen-button"></i> Instalar app</button>
+            <button type="button" class="btn btn-fantasma btn-icone" onclick="alternarTema()" aria-label="Trocar tema" title="Trocar tema"><i class="fa-solid fa-circle-half-stroke"></i></button>
+        </div>
 
         <div id="cardLogin" class="auth-card">
             <h1 class="auth-title">Bem-vindo de volta</h1>
-            <p class="auth-sub">Entre com o CPF e a senha do seu cadastro.</p>
+            <p class="auth-sub">Entre com o e-mail e a senha do seu cadastro.</p>
             <form id="formLogin">
                 <div class="form-group">
-                    <label for="loginCpf">CPF</label>
-                    <input type="text" id="loginCpf" required placeholder="Só os 11 números" maxlength="11" inputmode="numeric" autocomplete="username">
+                    <label for="loginEmail">E-mail</label>
+                    <input type="email" id="loginEmail" required placeholder="exemplo@email.com" autocomplete="username email">
                 </div>
                 <div class="form-group">
                     <label for="loginSenha">Senha</label>
@@ -365,33 +392,63 @@
 
         <div id="cardForgot" class="auth-card" style="display: none;">
             <h1 class="auth-title">Recuperar senha</h1>
-            <p class="auth-sub">Confirme os dados do cadastro para criar uma senha nova.</p>
+            <p class="auth-sub">Informe o e-mail do cadastro. Enviamos um link para você criar uma senha nova.</p>
             <form id="formForgot">
                 <div class="form-group">
-                    <label for="forNome">Nome completo (igual ao cadastro)</label>
-                    <input type="text" id="forNome" required>
-                </div>
-                <div class="form-group">
                     <label for="forEmail">E-mail do cadastro</label>
-                    <input type="email" id="forEmail" required placeholder="exemplo@email.com">
+                    <input type="email" id="forEmail" required placeholder="exemplo@email.com" autocomplete="email">
                 </div>
-                <div class="grid-form" style="grid-template-columns: 1fr 1fr; gap: 12px;">
-                    <div class="form-group">
-                        <label for="forCpf">CPF</label>
-                        <input type="text" id="forCpf" required placeholder="Só os números" maxlength="11" inputmode="numeric">
-                    </div>
-                    <div class="form-group">
-                        <label for="forNasc">Nascimento</label>
-                        <input type="date" id="forNasc" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="forNovaSenha">Nova senha</label>
-                    <input type="password" id="forNovaSenha" required placeholder="Com pelo menos 1 caractere especial" autocomplete="new-password">
-                </div>
-                <button type="submit" class="btn btn-ouro btn-largo">Redefinir senha</button>
+                <button type="submit" class="btn btn-ouro btn-largo">Enviar link de recuperação</button>
             </form>
             <div class="auth-toggle">Lembrou a senha? <span onclick="mudarTelaAuth('login')">Voltar ao login</span></div>
+        </div>
+
+        <div id="cardNovaSenha" class="auth-card" style="display: none;">
+            <h1 class="auth-title">Criar senha nova</h1>
+            <p class="auth-sub">Link confirmado. Escolha a nova senha da sua conta.</p>
+            <form id="formNovaSenha">
+                <div class="form-group">
+                    <label for="novaSenha1">Nova senha</label>
+                    <input type="password" id="novaSenha1" required placeholder="Com pelo menos 1 caractere especial" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="novaSenha2">Repita a nova senha</label>
+                    <input type="password" id="novaSenha2" required placeholder="Digite de novo" autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn btn-ouro btn-largo">Salvar nova senha</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ===================== AGUARDANDO LIBERAÇÃO ===================== -->
+<div id="screenPendente" class="auth-wrapper" style="display: none;">
+    <aside class="auth-lado">
+        <div class="marca" style="margin:0;padding:0">
+            <span class="marca-simbolo"><i class="fa-solid fa-chart-pie"></i></span>
+            <span><span class="marca-nome">Finance Pro</span><span class="marca-sub">Controle financeiro pessoal</span></span>
+        </div>
+        <div class="auth-frase">
+            <span class="traco" aria-hidden="true"></span>
+            <h2>Falta só a liberação.</h2>
+            <p>Sua conta já existe. Assim que o administrador liberar, seus ganhos, custos e cartões aparecem aqui.</p>
+        </div>
+    </aside>
+    <div class="auth-form">
+        <div class="topo"><button type="button" class="btn btn-fantasma btn-icone" onclick="alternarTema()" aria-label="Trocar tema" title="Trocar tema"><i class="fa-solid fa-circle-half-stroke"></i></button></div>
+        <div class="auth-card espera-caixa">
+            <div class="espera-icone"><i class="fa-regular fa-clock"></i></div>
+            <h1 class="auth-title" id="esperaTitulo">Aguardando liberação</h1>
+            <p class="auth-sub" id="esperaTexto">Conta criada. O administrador precisa liberar o seu acesso.</p>
+            <ol class="passos">
+                <li>Avise o administrador que você se cadastrou.</li>
+                <li>Ele libera em <b>Acessos</b>, no app dele.</li>
+                <li>Toque em <b>Já liberou? Conferir</b> aqui embaixo.</li>
+            </ol>
+            <div style="display:flex;gap:10px;margin-top:22px">
+                <button class="btn btn-ouro" style="flex:1" onclick="conferirLiberacao()"><i class="fa-solid fa-rotate"></i> Já liberou? Conferir</button>
+                <button class="btn btn-fantasma" onclick="logout()" title="Sair"><i class="fa-solid fa-right-from-bracket"></i> Sair</button>
+            </div>
         </div>
     </div>
 </div>
@@ -426,8 +483,11 @@
                 <div class="nav-rotulo">Cartões</div>
                 <button class="tab-btn" onclick="alterarAba('aba-faturas', this)"><i class="fa-solid fa-receipt"></i> Faturas</button>
                 <button class="tab-btn" onclick="alterarAba('aba-cartoes', this)"><i class="fa-solid fa-credit-card"></i> Meus cartões</button>
+                <div class="nav-rotulo" id="rotuloAdmin" style="display:none">Administração</div>
+                <button class="tab-btn" id="navAcessos" style="display:none" onclick="alterarAba('aba-acessos', this); renderAcessos()"><i class="fa-solid fa-user-shield"></i> Acessos <span class="aviso-nav" id="contaPendentes" style="display:none">0</span></button>
             </nav>
             <div class="lateral-pe">
+                <button type="button" id="instalarLateral" class="btn btn-fantasma btn-instalar" style="display:none" onclick="instalarApp()"><i class="fa-solid fa-mobile-screen-button"></i> Instalar app</button>
                 <div class="tema" role="radiogroup" aria-label="Tema">
                     <button type="button" role="radio" data-tema-opcao="claro" onclick="definirTema('claro')"><i class="fa-regular fa-sun"></i> Claro</button>
                     <button type="button" role="radio" data-tema-opcao="escuro" onclick="definirTema('escuro')"><i class="fa-regular fa-moon"></i> Escuro</button>
@@ -452,12 +512,12 @@
                 <h1 class="pagina-titulo" id="tituloPagina">Comparativo mensal</h1>
                 <p class="pagina-sub" id="subPagina">Entradas e contas do mês escolhido, lado a lado.</p>
             </div>
-            <div class="acoes">
+            <div class="acoes" id="acoesPagina">
                 <button class="btn" onclick="exportarParaExcel()"><i class="fa-solid fa-file-excel" style="color:rgb(var(--ok))"></i> Exportar Excel</button>
             </div>
         </div>
 
-        <div class="summary-cards">
+        <div class="summary-cards" id="resumoTopo">
             <div class="card">
                 <span class="card-icone ok"><i class="fa-solid fa-arrow-trend-up"></i></span>
                 <div style="min-width:0"><div class="card-label">Ganhos previstos (12 meses)</div><div id="sum-ganhos-12m" class="card-value success">R$ 0,00</div></div>
@@ -724,6 +784,25 @@
                 </div>
             </section>
         </div>
+
+        <!-- acessos (só master) -->
+        <div id="aba-acessos" class="tab-content">
+            <section class="cartao">
+                <h2 class="cartao-titulo">Quem pode usar o Finance Pro</h2>
+                <div class="cartao-corpo" style="padding-bottom:0">
+                    <p style="color:rgb(var(--tinta-2));font-size:14px;margin:0 0 4px">
+                        Cada pessoa vê apenas as próprias finanças — nem você, como administrador, enxerga
+                        os lançamentos dos outros. Aqui você só libera, bloqueia ou remove o acesso.
+                    </p>
+                </div>
+                <div class="table-responsive" style="border-top:1px solid rgb(var(--linha))">
+                    <table id="tabelaAcessos">
+                        <thead><tr><th>Pessoa</th><th>Situação</th><th>Último acesso</th><th></th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
     </main>
     <footer class="rodape">Finance Pro · desenvolvido por <b>Fellipe Gomes</b></footer>
     </div>
@@ -741,13 +820,13 @@
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    const SUPABASE_URL = 'https://bewpfscsoauanwqbdykz.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJld3Bmc2Nzb2F1YW53cWJkeWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1OTEwMjAsImV4cCI6MjA5ODE2NzAyMH0.cjejx0dG0fe-s178olnB7mZopE56iRuyNsNIcMpLP7E'; 
+    const SUPABASE_URL = 'https://lbprflzwrgllixuplish.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ARwRwdVyR_yXg11PFgwRTg_vqxbQgfx';
     
     let dbClient = null;
     let bancoNuvemAtivo = false;
 
-    let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null;
+    let lancamentos = []; let cartoes = []; let faturasPagas = {}; let usuarioLogado = null; let pessoas = [];
     let chartBar = null; let chartDoughnut = null;
 
     const mesesLabels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
@@ -758,10 +837,32 @@
         'Presente': '#f97316', 'Educação': '#0ea5e9', 'Saúde': '#10b981', 'Outros Fixos': '#64748b', 'Outros Variáveis': '#94a3b8'
     };
 
-    function forcarTelaLogin() {
+    function mostrarSomente(qual) {
         document.getElementById('loadingOverlay').style.display = 'none';
-        document.getElementById('screenAuth').style.display = 'grid';
-        document.getElementById('screenApp').style.display = 'none';
+        document.getElementById('screenAuth').style.display     = qual === 'acesso'   ? 'grid'  : 'none';
+        document.getElementById('screenPendente').style.display = qual === 'pendente' ? 'grid'  : 'none';
+        document.getElementById('screenApp').style.display      = qual === 'app'      ? 'block' : 'none';
+    }
+    function forcarTelaLogin() { mostrarSomente('acesso'); }
+
+    // Decide entre app e sala de espera, conforme a liberação
+    async function entrarOndeDer() {
+        if (!usuarioLogado) { forcarTelaLogin(); return; }
+        if (usuarioLogado.aprovado) { await showAppScreen(); return; }
+        const jaFoi = !!usuarioLogado.aprovado_em;
+        document.getElementById('esperaTitulo').innerText = jaFoi ? 'Acesso bloqueado' : 'Aguardando liberação';
+        document.getElementById('esperaTexto').innerText = jaFoi
+            ? 'Seu acesso foi suspenso pelo administrador. Seus dados continuam guardados.'
+            : 'Conta criada. O administrador precisa liberar o seu acesso.';
+        mostrarSomente('pendente');
+    }
+
+    async function conferirLiberacao() {
+        const { data: { session } } = await dbClient.auth.getSession();
+        if (!session) { forcarTelaLogin(); return; }
+        await carregarPerfil(session.user);
+        if (usuarioLogado && usuarioLogado.aprovado) { showToast("Acesso liberado. Bem-vindo!", "success"); await showAppScreen(); }
+        else { showToast("Ainda não foi liberado. Tente de novo daqui a pouco.", "warning"); }
     }
 
     window.onload = async function() {
@@ -771,106 +872,184 @@
         }, 3000);
         
         try {
-            if (window.supabase) {
-                dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                bancoNuvemAtivo = true;
-            }
+            if (!window.supabase) { forcarTelaLogin(); showToast("Não foi possível carregar a biblioteca do banco.", "error"); return; }
+            dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            bancoNuvemAtivo = true;
+
             ajustarFormulario('Var'); ajustarFormulario('Fix');
 
-            const sessionUser = localStorage.getItem('financeProUser');
-            if (sessionUser) {
-                usuarioLogado = JSON.parse(sessionUser);
-                await showAppScreen();
-            } else {
-                forcarTelaLogin();
-            }
+            // Link de recuperação de senha: o Supabase devolve a sessão no #hash da URL
+            const veioDeRecuperacao = /type=recovery/.test(location.hash || '');
+            dbClient.auth.onAuthStateChange((evento) => {
+                if (evento === 'PASSWORD_RECOVERY') { forcarTelaLogin(); mudarTelaAuth('novaSenha'); }
+            });
+
+            const { data: { session } } = await dbClient.auth.getSession();
+            if (veioDeRecuperacao) { forcarTelaLogin(); mudarTelaAuth('novaSenha'); return; }
+            if (session) { await carregarPerfil(session.user); await entrarOndeDer(); }
+            else { forcarTelaLogin(); }
+            prepararInstalacao();
         } catch (error) { console.error(error); forcarTelaLogin(); }
     };
 
+    // Busca (ou cria, se faltar) o perfil do usuário autenticado
+    async function carregarPerfil(authUser) {
+        const { data } = await dbClient.from('perfis').select('*').eq('id', authUser.id).maybeSingle();
+        if (data) {
+            usuarioLogado = data;
+            if (data.aprovado) { try { await dbClient.rpc('marcar_acesso'); } catch (e) {} }
+            return;
+        }
+        // rede de segurança: conta sem perfil (não deveria acontecer)
+        const meta = authUser.user_metadata || {};
+        const novo = {
+            id: authUser.id,
+            nome_completo: meta.nome_completo || (authUser.email || '').split('@')[0],
+            cpf: meta.cpf || null,
+            data_nascimento: meta.data_nascimento || null,
+            email: authUser.email || null
+        };
+        const { data: criado } = await dbClient.from('perfis').upsert([novo]).select().maybeSingle();
+        usuarioLogado = criado || Object.assign({ aprovado: false, papel: 'usuario' }, novo);
+    }
+
+    function ehMaster() { return !!usuarioLogado && usuarioLogado.papel === 'master'; }
+
     function mudarTelaAuth(tela) {
-        document.getElementById('cardLogin').style.display = 'none';
-        document.getElementById('cardRegister').style.display = 'none';
-        document.getElementById('cardForgot').style.display = 'none';
-        if (tela === 'login') document.getElementById('cardLogin').style.display = 'block';
-        if (tela === 'register') document.getElementById('cardRegister').style.display = 'block';
-        if (tela === 'forgot') document.getElementById('cardForgot').style.display = 'block';
+        ['cardLogin', 'cardRegister', 'cardForgot', 'cardNovaSenha'].forEach(id => {
+            const el = document.getElementById(id); if (el) el.style.display = 'none';
+        });
+        const mapa = { login: 'cardLogin', register: 'cardRegister', forgot: 'cardForgot', novaSenha: 'cardNovaSenha' };
+        const alvo = document.getElementById(mapa[tela] || 'cardLogin');
+        if (alvo) alvo.style.display = 'block';
     }
     function toggleAuthCards() { mudarTelaAuth('register'); }
 
-    // --- CADASTRO & LOGIN ---
+    // --- CADASTRO & LOGIN (Supabase Auth) ---
+    const SENHA_OK = /[\!@#$%^&*(),.?":{}|<>_\-\[\]]/;
+    function carregando(texto) {
+        document.getElementById('loadingText').innerText = texto;
+        document.getElementById('loadingOverlay').style.display = 'flex';
+    }
+    function pararCarregando() { document.getElementById('loadingOverlay').style.display = 'none'; }
+    function erroAmigavel(msg) {
+        const m = String(msg || '');
+        if (/Invalid login credentials/i.test(m)) return "E-mail ou senha incorretos.";
+        if (/Email not confirmed/i.test(m))      return "Confirme seu e-mail antes de entrar. Veja a caixa de entrada.";
+        if (/User already registered/i.test(m))  return "Esse e-mail já tem conta. Tente entrar ou recuperar a senha.";
+        if (/Password should be at least/i.test(m)) return "A senha precisa ter pelo menos 6 caracteres.";
+        if (/rate limit|too many/i.test(m))      return "Muitas tentativas. Espere um minuto e tente de novo.";
+        return m;
+    }
+
     document.getElementById('formRegister').onsubmit = async function(e) {
         e.preventDefault();
-        const nome = document.getElementById('regNome').value.trim();
-        const cpf = document.getElementById('regCpf').value.trim().replace(/\D/g, '');
+        const nome  = document.getElementById('regNome').value.trim();
+        const cpf   = document.getElementById('regCpf').value.trim().replace(/\D/g, '');
         const email = document.getElementById('regEmail').value.trim();
-        const nasc = document.getElementById('regNasc').value;
+        const nasc  = document.getElementById('regNasc').value;
         const senha = document.getElementById('regSenha').value;
 
         if (cpf.length !== 11) { showToast("CPF inválido!", "warning"); return; }
-        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(senha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
+        if (senha.length < 8)  { showToast("A senha precisa ter pelo menos 8 caracteres.", "warning"); return; }
+        if (!SENHA_OK.test(senha)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
 
-        document.getElementById('loadingText').innerText = "Criando sua conta…";
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
+        carregando("Criando sua conta…");
         try {
-            const { data: userExist } = await dbClient.from('usuarios').select('cpf').eq('cpf', cpf).maybeSingle();
-            if (userExist) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("CPF já cadastrado!", "warning"); return; }
+            const { data: jaUsado } = await dbClient.rpc('cpf_em_uso', { p_cpf: cpf });
+            if (jaUsado) { pararCarregando(); showToast("CPF já cadastrado!", "warning"); return; }
 
-            const { error } = await dbClient.from('usuarios').insert([{ id: Date.now().toString(), nome_completo: nome, cpf: cpf, email: email, data_nascimento: nasc, senha: senha }]);
-            document.getElementById('loadingOverlay').style.display = 'none';
+            const { data, error } = await dbClient.auth.signUp({
+                email: email,
+                password: senha,
+                options: { data: { nome_completo: nome, cpf: cpf, data_nascimento: nasc } }
+            });
+            pararCarregando();
+            if (error) { showToast(erroAmigavel(error.message), "error"); return; }
 
-            if (error) showToast("Erro do Banco: " + error.message, "error");
-            else { showToast("Cadastro realizado com sucesso!", "success"); this.reset(); mudarTelaAuth('login'); }
-        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
+            this.reset();
+            if (data.session) {
+                await carregarPerfil(data.user);
+                if (usuarioLogado.aprovado) showToast("Conta criada. Bem-vindo!", "success");
+                else showToast("Conta criada! Agora é só o administrador liberar.", "success");
+                await entrarOndeDer();
+            } else {
+                showToast("Conta criada! Confirme o e-mail que enviamos e depois entre.", "success");
+                mudarTelaAuth('login');
+            }
+        } catch (err) { pararCarregando(); showToast("Erro: " + err.message, "error"); }
     };
 
     document.getElementById('formLogin').onsubmit = async function(e) {
         e.preventDefault();
-        const cpf = document.getElementById('loginCpf').value.trim().replace(/\D/g, '');
+        const email = document.getElementById('loginEmail').value.trim();
         const senha = document.getElementById('loginSenha').value;
-        document.getElementById('loadingText').innerText = "Entrando…";
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
+        carregando("Entrando…");
         try {
-            const { data: user, error } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('senha', senha).maybeSingle();
-            if (error || !user) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Credenciais incorretas!", "error"); return; }
-            usuarioLogado = user; localStorage.setItem('financeProUser', JSON.stringify(user));
-            this.reset(); showToast("Bem-vindo de volta!", "success"); await showAppScreen();
-        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
+            const { data, error } = await dbClient.auth.signInWithPassword({ email: email, password: senha });
+            if (error) { pararCarregando(); showToast(erroAmigavel(error.message), "error"); return; }
+            await carregarPerfil(data.user);
+            this.reset();
+            if (usuarioLogado && usuarioLogado.aprovado) showToast("Bem-vindo de volta!", "success");
+            await entrarOndeDer();
+        } catch (err) { pararCarregando(); showToast("Erro: " + err.message, "error"); }
     };
 
     document.getElementById('formForgot').onsubmit = async function(e) {
         e.preventDefault();
-        const nome = document.getElementById('forNome').value.trim();
         const email = document.getElementById('forEmail').value.trim();
-        const cpf = document.getElementById('forCpf').value.trim().replace(/\D/g, '');
-        const nasc = document.getElementById('forNasc').value;
-        const novaSenha = document.getElementById('forNovaSenha').value;
-
-        if (!/[\!@#$%^&*(),.?":{}|<>_\-\[\]]/.test(novaSenha)) { showToast("A nova senha precisa conter caractere especial.", "warning"); return; }
-        document.getElementById('loadingOverlay').style.display = 'flex';
-
+        carregando("Enviando o link…");
         try {
-            const { data: user } = await dbClient.from('usuarios').select('*').eq('cpf', cpf).eq('email', email).eq('data_nascimento', nasc).eq('nome_completo', nome).maybeSingle();
-            if (!user) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Dados incorretos!", "error"); return; }
-            await dbClient.from('usuarios').update({ senha: novaSenha }).eq('id', user.id);
-            document.getElementById('loadingOverlay').style.display = 'none';
-            showToast("Senha redefinida!", "success"); mudarTelaAuth('login');
-        } catch(err) { document.getElementById('loadingOverlay').style.display = 'none'; showToast("Erro: " + err.message, "error"); }
+            const destino = location.origin + location.pathname;
+            const { error } = await dbClient.auth.resetPasswordForEmail(email, { redirectTo: destino });
+            pararCarregando();
+            if (error) { showToast(erroAmigavel(error.message), "error"); return; }
+            this.reset();
+            showToast("Se esse e-mail tiver conta, o link acabou de sair. Confira a caixa de entrada.", "success");
+            mudarTelaAuth('login');
+        } catch (err) { pararCarregando(); showToast("Erro: " + err.message, "error"); }
+    };
+
+    document.getElementById('formNovaSenha').onsubmit = async function(e) {
+        e.preventDefault();
+        const s1 = document.getElementById('novaSenha1').value;
+        const s2 = document.getElementById('novaSenha2').value;
+        if (s1 !== s2) { showToast("As duas senhas não são iguais.", "warning"); return; }
+        if (s1.length < 8) { showToast("A senha precisa ter pelo menos 8 caracteres.", "warning"); return; }
+        if (!SENHA_OK.test(s1)) { showToast("A senha precisa conter caractere especial.", "warning"); return; }
+        carregando("Salvando a nova senha…");
+        try {
+            const { error } = await dbClient.auth.updateUser({ password: s1 });
+            pararCarregando();
+            if (error) { showToast(erroAmigavel(error.message), "error"); return; }
+            this.reset();
+            history.replaceState(null, '', location.origin + location.pathname);
+            showToast("Senha alterada! Entre com ela.", "success");
+            await dbClient.auth.signOut();
+            mudarTelaAuth('login');
+        } catch (err) { pararCarregando(); showToast("Erro: " + err.message, "error"); }
     };
 
     async function showAppScreen() {
-        document.getElementById('userNameDisplay').innerText = usuarioLogado.nome_completo;
-        document.getElementById('userIniciais').innerText = String(usuarioLogado.nome_completo || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
-        document.getElementById('screenAuth').style.display = 'none';
-        document.getElementById('screenApp').style.display = 'block';
+        const nome = usuarioLogado.nome_completo || 'Usuário';
+        document.getElementById('userNameDisplay').innerText = nome;
+        document.getElementById('userIniciais').innerText = String(nome || '?').trim().split(/\s+/).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+        document.querySelector('#screenApp .pessoa-sub').innerText = ehMaster() ? 'Administrador' : 'Conta pessoal';
+
+        const mostrarAdmin = ehMaster() ? '' : 'none';
+        document.getElementById('navAcessos').style.display = mostrarAdmin;
+        document.getElementById('rotuloAdmin').style.display = mostrarAdmin;
+
+        mostrarSomente('app');
         await carregarDadosDaNuvem();
         construirFiltroMeses();
+        if (ehMaster()) renderAcessos();
     }
 
-    function logout() {
-        localStorage.removeItem('financeProUser'); usuarioLogado = null;
-        document.getElementById('screenApp').style.display = 'none'; document.getElementById('screenAuth').style.display = 'grid'; mudarTelaAuth('login');
+    async function logout() {
+        try { await dbClient.auth.signOut(); } catch (e) { console.error(e); }
+        usuarioLogado = null; lancamentos = []; cartoes = []; faturasPagas = {}; pessoas = [];
+        mostrarSomente('acesso'); mudarTelaAuth('login');
     }
 
     // --- BANCO DE DADOS (AGORA FILTRA POR USUÁRIO LOGADO) ---
@@ -900,7 +1079,7 @@
     document.getElementById('formGanhos').onsubmit = async function(e) {
         e.preventDefault();
         const obj = {
-            id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Ganho', data: document.getElementById('dataGan').value,
+            id: crypto.randomUUID(), id_usuario: usuarioLogado.id, tipo: 'Ganho', data: document.getElementById('dataGan').value,
             descricao: document.getElementById('descGan').value, categoria: document.getElementById('catGan').value,
             formaPagamento: document.getElementById('tipoGan').value, idCartao: null,
             valorParcela: parseFloat(document.getElementById('valTotalGan').value),
@@ -914,7 +1093,7 @@
     document.getElementById('formVariavel').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoVar').value; const idCartao = document.getElementById('cartaoVar').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
-        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
+        const obj = { id: crypto.randomUUID(), id_usuario: usuarioLogado.id, tipo: 'Variavel', data: document.getElementById('dataVar').value, descricao: document.getElementById('descVar').value, categoria: document.getElementById('catVar').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valParcVar').value), qtdParcelas: parseInt(document.getElementById('qtdParcVar').value) };
         lancamentos.push(obj); this.reset(); ajustarFormulario('Var'); atualizarTelaInteira(); showToast("Custo Variável salvo!", "success");
         await dbClient.from('lancamentos').insert([obj]);
     };
@@ -922,7 +1101,7 @@
     document.getElementById('formFixo').onsubmit = async function(e) {
         e.preventDefault(); const pgto = document.getElementById('pgtoFix').value; const idCartao = document.getElementById('cartaoFix').value;
         if (pgto.includes('Crédito') && !idCartao) { showToast("Selecione um cartão.", "warning"); return; }
-        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
+        const obj = { id: crypto.randomUUID(), id_usuario: usuarioLogado.id, tipo: 'Fixo', data: document.getElementById('dataFix').value, descricao: document.getElementById('descFix').value, categoria: document.getElementById('catFix').value, formaPagamento: pgto, idCartao: idCartao || null, valorParcela: parseFloat(document.getElementById('valMensalFix').value), qtdParcelas: parseInt(document.getElementById('qtdMesesFix').value) };
         lancamentos.push(obj); this.reset(); ajustarFormulario('Fix'); atualizarTelaInteira(); showToast("Custo Fixo salvo!", "success");
         await dbClient.from('lancamentos').insert([obj]);
     };
@@ -933,7 +1112,7 @@
 
     document.getElementById('formCartao').onsubmit = async function(e) {
         e.preventDefault();
-        const obj = { id: Date.now().toString(), id_usuario: usuarioLogado.id, nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
+        const obj = { id: crypto.randomUUID(), id_usuario: usuarioLogado.id, nome: document.getElementById('nomeCartao').value, melhorDia: parseInt(document.getElementById('melhorDia').value), diaVenc: parseInt(document.getElementById('diaVenc').value) };
         cartoes.push(obj); this.reset(); atualizarTelaInteira(); showToast("Cartão cadastrado!", "success"); await dbClient.from('cartoes').insert([obj]);
     };
     
@@ -1135,9 +1314,144 @@
         if (!linhasFat) tb.innerHTML = `<tr><td colspan="7" class="vazio">Nenhuma compra no cartão nos próximos meses.</td></tr>`;
     }
 
-    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt, id_usuario: usuarioLogado.id }]); showToast("Fatura paga!", "success"); }
+    async function pagarFat(k) { const dt = document.getElementById(`dt_${k}`).value; if(!dt) { showToast("Selecione a data de pagamento", "warning"); return; } faturasPagas[k] = { data: dt }; renderFaturas(); await dbClient.from('faturas_pagas').upsert([{ chave: k, data: dt, id_usuario: usuarioLogado.id }], { onConflict: 'id_usuario,chave' }); showToast("Fatura paga!", "success"); }
     async function estornarFat(k) { delete faturasPagas[k]; renderFaturas(); await dbClient.from('faturas_pagas').delete().eq('chave', k); showToast("Fatura reaberta.", "warning"); }
     
+    /* ---------- ACESSOS (só o master enxerga esta aba) ---------- */
+    function situacaoPessoa(p) {
+        if (p.aprovado) return { texto: 'Liberado', classe: 'selo-ok', icone: 'fa-circle-check' };
+        if (p.aprovado_em) return { texto: 'Bloqueado', classe: 'selo-bloq', icone: 'fa-ban' };
+        return { texto: 'Aguardando', classe: 'selo-espera', icone: 'fa-clock' };
+    }
+    function quandoFoi(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso), agora = new Date();
+        const dias = Math.floor((agora - d) / 86400000);
+        if (dias === 0) return 'hoje, ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        if (dias === 1) return 'ontem';
+        if (dias < 30) return 'há ' + dias + ' dias';
+        return d.toLocaleDateString('pt-BR');
+    }
+
+    async function renderAcessos() {
+        if (!ehMaster()) return;
+        const tb = document.querySelector('#tabelaAcessos tbody');
+        const { data, error } = await dbClient.from('perfis').select('*').order('aprovado', { ascending: true }).order('nome_completo');
+        if (error) { showToast("Não deu para carregar a lista: " + error.message, "error"); return; }
+        pessoas = data || [];
+
+        const pendentes = pessoas.filter(p => !p.aprovado && !p.aprovado_em).length;
+        const aviso = document.getElementById('contaPendentes');
+        aviso.innerText = pendentes;
+        aviso.style.display = pendentes ? 'inline-flex' : 'none';
+
+        tb.innerHTML = '';
+        if (!pessoas.length) { tb.innerHTML = `<tr><td colspan="4" class="vazio">Ninguém cadastrado ainda.</td></tr>`; return; }
+
+        pessoas.forEach(p => {
+            const sit = situacaoPessoa(p);
+            const eu = p.id === usuarioLogado.id;
+            const master = p.papel === 'master';
+            const nome = p.nome_completo || '(sem nome)';
+            const iniciais = String(nome).trim().split(/\s+/).slice(0, 2).map(x => x[0].toUpperCase()).join('');
+
+            const botoes = [];
+            if (!p.aprovado) botoes.push(`<button class="btn btn-ouro btn-sm" onclick="liberarPessoa('${p.id}', true)"><i class="fa-solid fa-check"></i> Liberar</button>`);
+            if (p.aprovado && !eu) botoes.push(`<button class="btn btn-sm" onclick="liberarPessoa('${p.id}', false)"><i class="fa-solid fa-ban"></i> Bloquear</button>`);
+            if (p.aprovado && !master) botoes.push(`<button class="btn btn-sm" onclick="trocarPapel('${p.id}', 'master')" title="Deixar esta pessoa também administrar os acessos"><i class="fa-solid fa-user-shield"></i> Tornar admin</button>`);
+            if (master && !eu) botoes.push(`<button class="btn btn-sm" onclick="trocarPapel('${p.id}', 'usuario')"><i class="fa-solid fa-user"></i> Tirar admin</button>`);
+            if (!eu) botoes.push(`<button class="btn-action-del" onclick="removerPessoa('${p.id}')" title="Remover acesso e apagar os dados" aria-label="Remover"><i class="fa-regular fa-trash-can"></i></button>`);
+
+            tb.innerHTML += `<tr>
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                        <span class="avatar">${iniciais || '?'}</span>
+                        <span style="min-width:0">
+                            <b style="display:block">${nome}${eu ? ' <span style="font-weight:400;color:rgb(var(--tinta-3))">(você)</span>' : ''}</b>
+                            <span style="color:rgb(var(--tinta-3));font-size:12.5px">${p.email || '—'}</span>
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <span class="selo ${sit.classe}"><i class="fa-solid ${sit.icone}"></i> ${sit.texto}</span>
+                    ${master ? '<span class="selo selo-master" style="margin-left:6px"><i class="fa-solid fa-user-shield"></i> Admin</span>' : ''}
+                </td>
+                <td>${quandoFoi(p.ultimo_acesso)}</td>
+                <td><div class="acoes-linha">${botoes.join('')}</div></td>
+            </tr>`;
+        });
+    }
+
+    async function liberarPessoa(id, liberar) {
+        const { error } = await dbClient.from('perfis').update({ aprovado: liberar }).eq('id', id);
+        if (error) { showToast(error.message, "error"); return; }
+        showToast(liberar ? "Acesso liberado." : "Acesso bloqueado.", liberar ? "success" : "warning");
+        renderAcessos();
+    }
+
+    async function trocarPapel(id, papel) {
+        const p = pessoas.find(x => x.id === id);
+        if (papel === 'master' && !confirm(`Tornar ${p ? p.nome_completo : 'esta pessoa'} administrador?\n\nEla vai poder liberar, bloquear e remover o acesso de qualquer pessoa — inclusive o seu.`)) return;
+        const { error } = await dbClient.from('perfis').update({ papel: papel }).eq('id', id);
+        if (error) { showToast(error.message, "error"); return; }
+        showToast(papel === 'master' ? "Agora é administrador." : "Deixou de ser administrador.", "success");
+        renderAcessos();
+    }
+
+    async function removerPessoa(id) {
+        const p = pessoas.find(x => x.id === id);
+        const nome = p ? p.nome_completo : 'esta pessoa';
+        if (!confirm(`Remover ${nome}?\n\nOs lançamentos, cartões e faturas dessa pessoa serão apagados e não tem como voltar atrás.\n\nO login dela continua existindo no Supabase; para apagar de vez, use Authentication > Users no painel.`)) return;
+        const { error } = await dbClient.from('perfis').delete().eq('id', id);
+        if (error) { showToast(error.message, "error"); return; }
+        showToast("Pessoa removida.", "warning");
+        renderAcessos();
+    }
+
+    /* ---------- INSTALAR COMO APP (PWA) ---------- */
+    let pedidoInstalacao = null;
+
+    function ehIOS() { return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+    function jaEstaInstalado() {
+        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    }
+    function mostrarBotoesInstalar(mostrar) {
+        ['instalarAcesso', 'instalarLateral'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = mostrar ? '' : 'none';
+        });
+    }
+
+    function prepararInstalacao() {
+        if (jaEstaInstalado()) { mostrarBotoesInstalar(false); return; }
+        if (ehIOS()) mostrarBotoesInstalar(true);
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); pedidoInstalacao = e; mostrarBotoesInstalar(true);
+        });
+        window.addEventListener('appinstalled', () => {
+            pedidoInstalacao = null; mostrarBotoesInstalar(false);
+            showToast("Finance Pro instalado!", "success");
+        });
+        // service worker só no site publicado (em file:// não existe)
+        if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        }
+    }
+
+    async function instalarApp() {
+        if (pedidoInstalacao) {
+            pedidoInstalacao.prompt();
+            try { await pedidoInstalacao.userChoice; } catch (e) {}
+            pedidoInstalacao = null;
+            return;
+        }
+        if (ehIOS()) {
+            alert('Para instalar no iPhone ou iPad:\n\n1. Toque no botão Compartilhar (o quadrado com a seta para cima)\n2. Escolha "Adicionar à Tela de Início"\n3. Toque em "Adicionar"\n\nO Finance Pro passa a abrir como aplicativo.');
+            return;
+        }
+        alert('Para instalar no computador:\n\nNo Chrome ou Edge, clique no ícone de instalar na barra de endereço (um monitor com uma seta), ou abra o menu ⋮ e escolha "Instalar Finance Pro".');
+    }
+
     /* ---------- visual (tema, menu, pílulas) ---------- */
     function dataBR(d) { return d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—'; }
     function pilulaCat(cat, cor) {
@@ -1180,6 +1494,7 @@
         'aba-fixo': ['Lançamentos', 'Custo fixo', 'Contas que se repetem todo mês: aluguel, luz, internet, assinaturas.'],
         'aba-faturas': ['Cartões', 'Faturas', 'O que vence em cada cartão, com o pagamento marcado.'],
         'aba-cartoes': ['Cartões', 'Meus cartões', 'Melhor dia de compra e vencimento de cada cartão.'],
+        'aba-acessos': ['Administração', 'Acessos', 'Quem entra no Finance Pro. Cada pessoa vê só as próprias finanças.'],
     };
     function alterarAba(id, btn) {
         document.querySelectorAll('.tab-content').forEach(c => { c.classList.remove('active'); c.style.display = ''; });
@@ -1187,6 +1502,10 @@
         document.getElementById(id).classList.add('active'); btn.classList.add('active');
         const t = TITULOS[id];
         if (t) { document.getElementById('eyebrowPagina').innerText = t[0]; document.getElementById('tituloPagina').innerText = t[1]; document.getElementById('subPagina').innerText = t[2]; }
+        // a aba de acessos não é sobre dinheiro: esconde os números e o Exportar
+        const ehAdmin = id === 'aba-acessos';
+        document.getElementById('resumoTopo').style.display = ehAdmin ? 'none' : '';
+        document.getElementById('acoesPagina').style.display = ehAdmin ? 'none' : '';
         abrirMenu(false); window.scrollTo({ top: 0 });
         if(id === 'aba-dashboard') renderDashboard(); if(id === 'aba-faturas') renderFaturas();
         if(id === 'aba-comparativo') renderComparativo(); if(id === 'aba-variavel' || id === 'aba-fixo' || id === 'aba-ganhos') renderTabelasLancamentos();
